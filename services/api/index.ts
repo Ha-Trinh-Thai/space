@@ -15,7 +15,6 @@ function bootstrap() {
       const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
       const config = app.get(ConfigService);
 
-      app.setGlobalPrefix('api');
       app.useGlobalPipes(
         new ValidationPipe({
           whitelist: true,
@@ -24,7 +23,7 @@ function bootstrap() {
         }),
       );
       app.enableCors({
-        origin: config.get<string>('CORS_ORIGIN', '*'),
+        origin: config.get<string>('CORS_ORIGIN', 'http://localhost:3000'),
         credentials: true,
       });
 
