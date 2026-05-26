@@ -1,0 +1,228 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  memberships   WorkspaceMember[]
+  refreshTokens RefreshToken[]
+  passwordReset PasswordReset?
+  documents     Document[]  @relation("DocumentAuthor")
+  comments      Comment[]   @relation("CommentAuthor")
+  canvases      Canvas[]    @relation("CanvasAuthor")
+  mindmaps      Mindmap[]   @relation("MindmapAuthor")
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String   @unique @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_resets")
+}
+
+model Workspace {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members   WorkspaceMember[]
+  documents Document[]
+  canvases  Canvas[]
+  mindmaps  Mindmap[]
+
+  @@map("workspaces")
+}
+
+enum Role {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+model WorkspaceMember {
+  id          String    @id @default(uuid())
+  role        Role      @default(EDITOR)
+  userId      String    @map("user_id")
+  workspaceId String    @map("workspace_id")
+  joinedAt    DateTime  @default(now()) @map("joined_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@index([workspaceId])
+  @@map("workspace_members")
+}
+
+// ─── Document System ─────────────────────────────────────
+
+model Document {
+  id          String   @id @default(uuid())
+  title       String   @default("Untitled")
+  content     Json?    @default("{}")
+  icon        String?
+  isFavorite  Boolean  @default(false) @map("is_favorite")
+  position    Int      @default(0)
+  workspaceId String   @map("workspace_id")
+  parentId    String?  @map("parent_id")
+  createdById String   @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  parent    Document? @relation("DocumentTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Document[] @relation("DocumentTree")
+  createdBy User      @relation("DocumentAuthor", fields: [createdById], references: [id])
+  comments  Comment[]
+
+  @@index([workspaceId, parentId])
+  @@index([workspaceId, isFavorite])
+  @@map("documents")
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  content    String
+  resolved   Boolean  @default(false)
+  anchorId   String?  @map("anchor_id")
+  documentId String   @map("document_id")
+  authorId   String   @map("author_id")
+  parentId   String?  @map("parent_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  author   User     @relation("CommentAuthor", fields: [authorId], references: [id])
+  parent   Comment? @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[] @relation("CommentThread")
+
+  @@index([documentId])
+  @@map("comments")
+}
+
+// ─── Canvas / Whiteboard System ──────────────────────────
+
+model Canvas {
+  id          String   @id @default(uuid())
+  title       String   @default("Untitled Canvas")
+  workspaceId String   @map("workspace_id")
+  createdById String   @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  workspace Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User         @relation("CanvasAuthor", fields: [createdById], references: [id])
+  objects   CanvasObject[]
+
+  @@index([workspaceId])
+  @@map("canvases")
+}
+
+enum CanvasObjectType {
+  RECTANGLE
+  ELLIPSE
+  ARROW
+  LINE
+  TEXT
+  STICKY_NOTE
+  IMAGE
+  PENCIL
+  GROUP
+}
+
+model CanvasObject {
+  id       String           @id @default(uuid())
+  type     CanvasObjectType
+  x        Float            @default(0)
+  y        Float            @default(0)
+  width    Float            @default(100)
+  height   Float            @default(100)
+  rotation Float            @default(0)
+  scaleX   Float            @default(1) @map("scale_x")
+  scaleY   Float            @default(1) @map("scale_y")
+  props    Json             @default("{}")
+  zIndex   Int              @default(0) @map("z_index")
+  groupId  String?          @map("group_id")
+  canvasId String           @map("canvas_id")
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+
+  canvas  Canvas        @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  group   CanvasObject? @relation("ObjectGroup", fields: [groupId], references: [id], onDelete: SetNull)
+  children CanvasObject[] @relation("ObjectGroup")
+
+  @@index([canvasId])
+  @@map("canvas_objects")
+}
+
+// ─── Mindmap System ──────────────────────────────────────
+
+model Mindmap {
+  id          String   @id @default(uuid())
+  title       String   @default("Untitled Mindmap")
+  workspaceId String   @map("workspace_id")
+  createdById String   @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  workspace Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User         @relation("MindmapAuthor", fields: [createdById], references: [id])
+  nodes     MindmapNode[]
+
+  @@index([workspaceId])
+  @@map("mindmaps")
+}
+
+model MindmapNode {
+  id        String  @id @default(uuid())
+  label     String  @default("New node")
+  color     String  @default("#e3f2fd")
+  icon      String?
+  collapsed Boolean @default(false)
+  position  Int     @default(0)
+  parentId  String? @map("parent_id")
+  mindmapId String  @map("mindmap_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  mindmap  Mindmap      @relation(fields: [mindmapId], references: [id], onDelete: Cascade)
+  parent   MindmapNode? @relation("NodeTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children MindmapNode[] @relation("NodeTree")
+
+  @@index([mindmapId])
+  @@index([mindmapId, parentId])
+  @@map("mindmap_nodes")
+}
