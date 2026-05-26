@@ -4,7 +4,6 @@ import express from 'express';
 import serverless from 'serverless-http';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
-import { ConfigService } from '@nestjs/config';
 
 const expressApp = express();
 
@@ -14,11 +13,14 @@ async function bootstrap() {
   if (!cachedServer) {
     const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
 
-    const config = app.get(ConfigService);
-
-    // IMPORTANT: apply EVERYTHING here
+    // ----------------------------
+    // GLOBAL PREFIX
+    // ----------------------------
     app.setGlobalPrefix('api');
 
+    // ----------------------------
+    // GLOBAL VALIDATION PIPE
+    // ----------------------------
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -27,9 +29,25 @@ async function bootstrap() {
       }),
     );
 
+    // ----------------------------
+    // CORS (CRITICAL FIX)
+    // ----------------------------
+    const allowedOrigins = ['http://localhost:3000', process.env.CORS_ORIGIN].filter(Boolean);
+
     app.enableCors({
-      origin: config.get('CORS_ORIGIN', '*'),
+      origin: (origin, callback) => {
+        // allow server-to-server / curl / postman
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+
+        return callback(null, false);
+      },
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
     });
 
     await app.init();
