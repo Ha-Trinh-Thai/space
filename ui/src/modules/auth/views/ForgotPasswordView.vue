@@ -28,14 +28,12 @@ async function handleSubmit() {
 
     <v-alert v-if="sent" type="success" variant="tonal" class="mb-6" rounded="lg">
       <div class="d-flex align-center">
-        <v-icon icon="mdi-check-circle" class="mr-2" />
         <span>If an account with that email exists, a reset link has been sent.</span>
       </div>
     </v-alert>
 
     <v-form v-if="!sent" @submit.prevent="handleSubmit">
       <div class="mb-5">
-        <label class="text-body-2 font-weight-medium d-block mb-2">Email address</label>
         <v-text-field
           v-model="email"
           type="email"
@@ -74,3 +72,5 @@ async function handleSubmit() {
     </p>
   </div>
 </template>
+
+<style lang="scss" src="../style.scss" />

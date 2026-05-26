@@ -8,6 +8,7 @@ import { useAuthStore } from '@/modules/auth/store';
 import { useCanvasStore } from '@/modules/canvas/store';
 import { useMindmapStore } from '@/modules/mindmap/store';
 import DocumentTree from '@/modules/document/components/DocumentTree.vue';
+import AppLogo from '@/shared/components/AppLogo.vue';
 
 const drawer = ref(true);
 const rail = ref(false);
@@ -98,9 +99,7 @@ async function createMindmap() {
   >
     <!-- Brand -->
     <div class="sidebar-brand pa-4 pb-3 d-flex align-center">
-      <div class="brand-icon d-flex align-center justify-center mr-3">
-        <v-icon icon="mdi-brain" size="20" color="white" />
-      </div>
+      <AppLogo size="sm" class="mr-3" />
       <span class="text-subtitle-1 font-weight-bold">Space</span>
       <v-spacer />
       <v-btn
@@ -315,14 +314,6 @@ async function createMindmap() {
 <style scoped>
 .sidebar {
   border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
-}
-
-.brand-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25);
 }
 
 .workspace-indicator {

@@ -28,7 +28,7 @@ async function handleLogin() {
 
 <template>
   <div>
-    <h1 class="text-h1 font-weight-black mb-1">Welcome back</h1>
+    <h2 class="text-h4 font-weight-black mb-1">Welcome back</h2>
     <p class="text-body-2 text-medium-emphasis mb-8">Sign in to your account to continue</p>
 
     <v-alert
@@ -59,14 +59,6 @@ async function handleLogin() {
       </div>
 
       <div class="mb-5">
-        <div class="d-flex align-center justify-space-between mb-2">
-          <RouterLink
-            to="/auth/forgot-password"
-            class="text-caption text-primary text-decoration-none"
-          >
-            Forgot password?
-          </RouterLink>
-        </div>
         <v-text-field
           v-model="password"
           :type="showPassword ? 'text' : 'password'"
@@ -81,7 +73,14 @@ async function handleLogin() {
           @click:append-inner="showPassword = !showPassword"
         />
       </div>
-
+      <div class="d-flex align-center justify-space-between mb-2">
+        <RouterLink
+          to="/auth/forgot-password"
+          class="text-caption text-primary text-decoration-none"
+        >
+          Forgot password?
+        </RouterLink>
+      </div>
       <v-btn
         type="submit"
         block
@@ -107,3 +106,5 @@ async function handleLogin() {
     </p>
   </div>
 </template>
+
+<style lang="scss" src="../style.scss" />

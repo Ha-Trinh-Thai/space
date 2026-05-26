@@ -46,7 +46,6 @@ async function handleSignup() {
 
     <v-form @submit.prevent="handleSignup">
       <div class="mb-5">
-        <label class="text-body-2 font-weight-medium d-block mb-2">Full name</label>
         <v-text-field
           v-model="name"
           placeholder="John Doe"
@@ -60,7 +59,6 @@ async function handleSignup() {
       </div>
 
       <div class="mb-5">
-        <label class="text-body-2 font-weight-medium d-block mb-2">Email</label>
         <v-text-field
           v-model="email"
           type="email"
@@ -75,7 +73,6 @@ async function handleSignup() {
       </div>
 
       <div class="mb-5">
-        <label class="text-body-2 font-weight-medium d-block mb-2">Password</label>
         <v-text-field
           v-model="password"
           :type="showPassword ? 'text' : 'password'"
@@ -116,3 +113,5 @@ async function handleSignup() {
     </p>
   </div>
 </template>
+
+<style lang="scss" src="../style.scss" />
