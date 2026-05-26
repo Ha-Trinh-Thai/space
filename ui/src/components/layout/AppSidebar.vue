@@ -11,7 +11,7 @@ import DocumentTree from '@/modules/document/components/DocumentTree.vue';
 import AppLogo from '@/shared/components/AppLogo.vue';
 
 const drawer = ref(true);
-const rail = ref(false);
+const sideBarCollapsed = ref(false);
 
 const router = useRouter();
 const route = useRoute();
@@ -91,56 +91,48 @@ async function createMindmap() {
   <v-navigation-drawer
     v-model="drawer"
     permanent
-    :rail="rail"
-    rail-width="56"
+    :rail="sideBarCollapsed"
+    rail-width="65"
     width="260"
     class="sidebar"
-    @click="rail = false"
   >
-    <!-- Brand -->
-    <div class="sidebar-brand pa-4 pb-3 d-flex align-center">
-      <AppLogo size="sm" class="mr-3" />
-      <span class="text-subtitle-1 font-weight-bold">Space</span>
-      <v-spacer />
+    <div class="h-12.5 pa-4 pb-3 d-flex align-center">
+      <AppLogo v-if="!sideBarCollapsed" size="sm" class="mr-3" />
+
+      <span v-if="!sideBarCollapsed" class="text-subtitle-1 font-weight-bold">Space</span>
+
+      <v-spacer v-if="!sideBarCollapsed" />
+
       <v-btn
-        :inert="rail"
-        icon="mdi-chevron-left"
-        size="x-small"
+        icon
+        size="small"
         variant="text"
         density="compact"
-        @click.stop="rail = !rail"
-      />
+        :width="sideBarCollapsed ? '100%' : '32px'"
+        @click.stop="sideBarCollapsed = !sideBarCollapsed"
+      >
+        <v-icon :icon="sideBarCollapsed ? 'mdi-collage' : 'mdi-chevron-left'" />
+      </v-btn>
     </div>
 
     <v-divider class="mx-4 mb-2" />
 
     <!-- Home link -->
     <v-list nav class="px-3 py-0">
-      <v-list-item
-        prepend-icon="mdi-home-outline"
-        title="Home"
-        to="/"
-        exact
-        class="mb-1 sidebar-item"
-        rounded="lg"
-      />
+      <v-list-item prepend-icon="mdi-home-outline" title="Home" to="/" exact class="mb-1" />
     </v-list>
 
     <!-- Inside a workspace -->
-    <template v-if="currentWorkspaceId && !rail">
+    <template v-if="currentWorkspaceId && !sideBarCollapsed">
       <!-- Workspace indicator -->
-      <div class="workspace-indicator mx-4 my-3 pa-3 rounded-lg d-flex align-center">
+      <v-sheet
+        class="mx-2 my-3 pa-3 rounded-lg d-flex align-center cursor-pointer"
+        color="orange-lighten-5"
+        @click="goToWorkspace(currentWorkspaceId)"
+      >
         <v-icon icon="mdi-folder-open" size="18" class="mr-2 text-primary" />
         <span class="text-body-2 font-weight-medium text-truncate">{{ currentWorkspaceName }}</span>
-        <v-spacer />
-        <v-btn
-          icon="mdi-cog-outline"
-          size="x-small"
-          variant="text"
-          density="compact"
-          @click="goToWorkspace(currentWorkspaceId)"
-        />
-      </div>
+      </v-sheet>
 
       <DocumentTree :workspace-id="currentWorkspaceId" />
 
@@ -155,7 +147,7 @@ async function createMindmap() {
           @click="showCanvases = !showCanvases"
         />
         <span
-          class="text-caption text-medium-emphasis text-uppercase font-weight-bold flex-grow-1 letter-spacing-1"
+          class="text-caption text-medium-emphasis text-uppercase font-weight-bold grow letter-spacing-1"
         >
           Canvases
         </span>
@@ -170,20 +162,15 @@ async function createMindmap() {
       <v-expand-transition>
         <v-list v-show="showCanvases" nav class="py-0 px-3">
           <v-list-item
-            v-for="c in canvases"
-            :key="c.id"
-            :title="c.title"
+            v-for="canvas in canvases"
+            :key="canvas.id"
+            :title="canvas.title"
             prepend-icon="mdi-draw"
-            :active="route.params.canvasId === c.id"
-            class="sidebar-item"
+            :active="route.params.canvasId === canvas.id"
             rounded="lg"
-            @click="openCanvas(c.id)"
+            @click="openCanvas(canvas.id)"
           />
-          <v-list-item
-            v-if="canvases.length === 0"
-            class="text-medium-emphasis sidebar-item"
-            rounded="lg"
-          >
+          <v-list-item v-if="canvases.length === 0" class="text-medium-emphasis" rounded="lg">
             <template #prepend>
               <v-icon icon="mdi-draw" size="18" class="opacity-40" />
             </template>
@@ -203,7 +190,7 @@ async function createMindmap() {
           @click="showMindmaps = !showMindmaps"
         />
         <span
-          class="text-caption text-medium-emphasis text-uppercase font-weight-bold flex-grow-1 letter-spacing-1"
+          class="text-caption text-medium-emphasis text-uppercase font-weight-bold grow letter-spacing-1"
         >
           Mindmaps
         </span>
@@ -223,15 +210,10 @@ async function createMindmap() {
             :title="m.title"
             prepend-icon="mdi-sitemap"
             :active="route.params.mindmapId === m.id"
-            class="sidebar-item"
             rounded="lg"
             @click="openMindmap(m.id)"
           />
-          <v-list-item
-            v-if="mindmaps.length === 0"
-            class="text-medium-emphasis sidebar-item"
-            rounded="lg"
-          >
+          <v-list-item v-if="mindmaps.length === 0" class="text-medium-emphasis" rounded="lg">
             <template #prepend>
               <v-icon icon="mdi-sitemap" size="18" class="opacity-40" />
             </template>
@@ -242,7 +224,7 @@ async function createMindmap() {
     </template>
 
     <!-- Workspace list (home) -->
-    <template v-else-if="!currentWorkspaceId && !rail">
+    <template v-else-if="!currentWorkspaceId && !sideBarCollapsed">
       <div class="section-header d-flex align-center px-5 py-2 mt-2">
         <span
           class="text-caption text-medium-emphasis text-uppercase font-weight-bold letter-spacing-1"
@@ -252,18 +234,17 @@ async function createMindmap() {
       </div>
       <v-list nav class="px-3">
         <v-list-item
-          v-for="ws in workspaces"
-          :key="ws.id"
-          :title="ws.name"
+          v-for="workspace in workspaces"
+          :key="workspace.id"
+          :title="workspace.name"
           prepend-icon="mdi-folder-outline"
-          class="sidebar-item"
           rounded="lg"
-          @click="goToWorkspace(ws.id)"
+          @click="goToWorkspace(workspace.id)"
         />
         <v-list-item
           v-if="workspaces.length === 0"
           disabled
-          class="text-medium-emphasis sidebar-item"
+          class="text-medium-emphasis"
           rounded="lg"
         >
           <v-list-item-title class="text-body-2 font-italic">No workspaces</v-list-item-title>
@@ -274,8 +255,8 @@ async function createMindmap() {
     <!-- Footer -->
     <template #append>
       <v-divider class="mx-4" />
-      <div class="pa-3">
-        <div v-if="user" class="user-section pa-3 rounded-lg d-flex align-center">
+      <div>
+        <div v-if="user" class="pa-3 d-flex align-center">
           <v-avatar
             size="32"
             color="primary"
@@ -286,12 +267,11 @@ async function createMindmap() {
               {{ user.name.charAt(0).toUpperCase() }}
             </span>
           </v-avatar>
-          <div class="flex-grow-1 overflow-hidden">
+          <div class="grow overflow-hidden">
             <div class="text-body-2 font-weight-medium text-truncate">{{ user.name }}</div>
-            <div class="text-caption text-medium-emphasis text-truncate">{{ user.email }}</div>
           </div>
           <v-btn
-            :inert="rail"
+            :inert="sideBarCollapsed"
             :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
             size="x-small"
             variant="text"
@@ -299,7 +279,7 @@ async function createMindmap() {
             @click.stop="toggleTheme"
           />
           <v-btn
-            :inert="rail"
+            :inert="sideBarCollapsed"
             icon="mdi-logout"
             size="x-small"
             variant="text"
@@ -318,7 +298,6 @@ async function createMindmap() {
 
 .workspace-indicator {
   background: rgba(249, 115, 22, 0.06);
-  border: 1px solid rgba(249, 115, 22, 0.1);
 }
 
 .section-header {
@@ -327,14 +306,5 @@ async function createMindmap() {
 
 .letter-spacing-1 {
   letter-spacing: 0.05em;
-}
-
-.sidebar-item {
-  margin-bottom: 2px;
-  min-height: 36px;
-}
-
-.user-section {
-  background: rgba(0, 0, 0, 0.03);
 }
 </style>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import AppSidebar from '@/components/layout/AppSidebar.vue';
-import AppSearch from '@/components/layout/AppSearch.vue';
 </script>
 
 <template>
@@ -8,11 +7,9 @@ import AppSearch from '@/components/layout/AppSearch.vue';
     <v-layout>
       <AppSidebar />
       <v-main>
-        <div class="main-toolbar d-flex align-center px-4 py-2">
-          <AppSearch />
-          <v-spacer />
+        <div class="h-screen">
+          <RouterView />
         </div>
-        <RouterView />
       </v-main>
     </v-layout>
   </v-app>
