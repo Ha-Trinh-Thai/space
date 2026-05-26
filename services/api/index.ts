@@ -7,20 +7,38 @@ import { AppModule } from '../src/app.module';
 
 const expressApp = express();
 
+expressApp.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'https://space-ui-sigma.vercel.app',
+    process.env.CORS_ORIGIN || '',
+  ];
+
+  if (allowedOrigins.includes(origin || '')) {
+    res.setHeader('Access-Control-Allow-Origin', origin!);
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  next();
+});
+
 let cachedServer: any;
 
 async function bootstrap() {
   if (!cachedServer) {
     const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
 
-    // ----------------------------
-    // GLOBAL PREFIX
-    // ----------------------------
     app.setGlobalPrefix('api');
 
-    // ----------------------------
-    // GLOBAL VALIDATION PIPE
-    // ----------------------------
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -28,27 +46,6 @@ async function bootstrap() {
         transform: true,
       }),
     );
-
-    // ----------------------------
-    // CORS (CRITICAL FIX)
-    // ----------------------------
-    const allowedOrigins = ['http://localhost:3000', process.env.CORS_ORIGIN].filter(Boolean);
-
-    app.enableCors({
-      origin: (origin, callback) => {
-        // allow server-to-server / curl / postman
-        if (!origin) return callback(null, true);
-
-        if (allowedOrigins.includes(origin)) {
-          return callback(null, true);
-        }
-
-        return callback(null, false);
-      },
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-    });
 
     await app.init();
 
