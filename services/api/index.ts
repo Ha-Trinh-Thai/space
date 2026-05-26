@@ -1,57 +1,36 @@
-import express from 'express';
-import serverless from 'serverless-http';
 import { NestFactory } from '@nestjs/core';
-import { ExpressAdapter } from '@nestjs/platform-express';
-import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
+import { ValidationPipe } from '@nestjs/common';
+import { VercelRequest, VercelResponse } from '@vercel/node';
 
-const expressApp = express();
+let app;
 
-expressApp.use((req, res, next) => {
-  const origin = req.headers.origin;
-
-  const allowedOrigins = ['http://localhost:3000', 'https://space-ui-sigma.vercel.app'];
-
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
-
-  next();
-});
-
-let cachedServer: any;
-
-async function bootstrap() {
-  if (!cachedServer) {
-    const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
+async function getApp() {
+  if (!app) {
+    app = await NestFactory.create(AppModule);
 
     app.setGlobalPrefix('api');
 
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
-        forbidNonWhitelisted: true,
         transform: true,
       }),
     );
 
-    await app.init();
+    app.enableCors({
+      origin: 'https://space-ui-sigma.vercel.app',
+      credentials: true,
+    });
 
-    cachedServer = serverless(expressApp);
+    await app.init();
   }
 
-  return cachedServer;
+  return app;
 }
 
-export default async function handler(req: any, res: any) {
-  const server = await bootstrap();
-  return server(req, res);
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const app = await getApp();
+  const httpAdapter = app.getHttpAdapter();
+  return httpAdapter.getInstance()(req, res);
 }
