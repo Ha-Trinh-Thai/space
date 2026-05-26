@@ -1,11 +1,31 @@
-import { NestFactory } from '@nestjs/core';
-import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
 import serverless from 'serverless-http';
+import { NestFactory } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
 
 const expressApp = express();
+
+expressApp.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  const allowedOrigins = ['http://localhost:3000', 'https://space-ui-sigma.vercel.app'];
+
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
+  next();
+});
 
 let cachedServer: any;
 
@@ -22,13 +42,6 @@ async function bootstrap() {
         transform: true,
       }),
     );
-
-    app.enableCors({
-      origin: ['http://localhost:3000', 'https://space-ui-sigma.vercel.app'],
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-      credentials: true,
-    });
 
     await app.init();
 
