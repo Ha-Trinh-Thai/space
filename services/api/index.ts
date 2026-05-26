@@ -1,11 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../src/app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { VercelRequest, VercelResponse } from '@vercel/node';
 
 let app;
 
-async function getApp() {
+async function bootstrap() {
   if (!app) {
     app = await NestFactory.create(AppModule);
 
@@ -19,7 +18,9 @@ async function getApp() {
     );
 
     app.enableCors({
-      origin: 'https://space-ui-sigma.vercel.app',
+      origin: ['https://space-ui-sigma.vercel.app', 'http://localhost:3000'],
+      methods: 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
+      allowedHeaders: ['Content-Type', 'Authorization'],
       credentials: true,
     });
 
@@ -29,8 +30,8 @@ async function getApp() {
   return app;
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const app = await getApp();
+export default async function handler(req, res) {
+  const app = await bootstrap();
   const httpAdapter = app.getHttpAdapter();
   return httpAdapter.getInstance()(req, res);
 }
