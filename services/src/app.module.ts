@@ -7,9 +7,6 @@ import { DocumentModule } from './document/document.module';
 import { CommentModule } from './comment/comment.module';
 import { CanvasModule } from './canvas/canvas.module';
 import { MindmapModule } from './mindmap/mindmap.module';
-import { GatewayModule } from './gateway/gateway.module';
-
-const isServerless = !!process.env.VERCEL;
 
 @Module({
   imports: [
@@ -21,7 +18,6 @@ const isServerless = !!process.env.VERCEL;
     CommentModule,
     CanvasModule,
     MindmapModule,
-    ...(isServerless ? [] : [GatewayModule]),
   ],
 })
 export class AppModule {}
