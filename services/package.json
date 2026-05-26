@@ -6,9 +6,10 @@
     "seed": "tsx prisma/seed.ts"
   },
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "nest start --watch",
-    "build": "nest build",
-    "vercel-build": "prisma generate && nest build",
+    "build": "prisma generate && nest build",
+    "vercel-build": "prisma generate",
     "start": "node dist/main",
     "start:prod": "node dist/main",
     "db:generate": "prisma generate",
