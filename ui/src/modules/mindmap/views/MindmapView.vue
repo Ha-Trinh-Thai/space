@@ -8,7 +8,7 @@
         variant="plain"
         density="compact"
         hide-details
-        class="mindmap-title flex-grow-0"
+        class="font-bold"
         style="max-width: 300px"
         @blur="saveTitle"
         @keydown.enter="($event.target as HTMLInputElement)?.blur()"
@@ -272,10 +272,7 @@ function truncate(text: string, max: number) {
   background: rgb(var(--v-theme-surface));
   border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
-.mindmap-title :deep(input) {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
+
 .mindmap-canvas {
   background-color: #f8fafc;
   background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);

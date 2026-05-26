@@ -1,40 +1,29 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { storeToRefs } from 'pinia';
 import { useWorkspaceStore } from '@/modules/workspace/store';
 import { useAuthStore } from '@/modules/auth/store';
+import { CARD_GRADIENTS, CARD_COLORS } from '@/constants';
 
 const router = useRouter();
-const workspaceStore = useWorkspaceStore();
+const { workspaces, loading, fetchWorkspaces, createWorkspace } = useWorkspaceStore();
 const auth = useAuthStore();
 
-const { workspaces, loading } = storeToRefs(workspaceStore);
+// const { workspaces, loading } = storeToRefs(workspaceStore);
 
 const showCreate = ref(false);
 const newName = ref('');
 const creating = ref(false);
 
-const cardGradients = [
-  'linear-gradient(135deg, #f97316, #ea580c)',
-  'linear-gradient(135deg, #1c1917, #292524)',
-  'linear-gradient(135deg, #fb923c, #f97316)',
-  'linear-gradient(135deg, #292524, #1c1917)',
-  'linear-gradient(135deg, #ea580c, #c2410c)',
-  'linear-gradient(135deg, #fdba74, #fb923c)',
-];
-
-const cardColors = ['#f97316', '#1c1917', '#fb923c', '#292524', '#ea580c', '#fdba74'];
-
 onMounted(async () => {
-  await workspaceStore.fetchWorkspaces();
+  await fetchWorkspaces();
 });
 
-async function createWorkspace() {
+async function handleCreateWorkspace() {
   if (!newName.value.trim()) return;
   creating.value = true;
   try {
-    const ws = await workspaceStore.createWorkspace(newName.value.trim());
+    const ws = await createWorkspace(newName.value.trim());
     showCreate.value = false;
     newName.value = '';
     router.push({ name: 'workspace', params: { workspaceId: ws.id } });
@@ -49,10 +38,10 @@ function openWorkspace(id: string) {
 </script>
 
 <template>
-  <div class="home-view pa-6 pa-md-10">
+  <div class="pa-6 pa-md-10">
     <!-- Welcome Hero -->
-    <div class="welcome-hero mb-10 pa-8 pa-md-10 rounded-xl">
-      <v-row align="center">
+    <div class="welcome-hero mb-10 pa-md-5 rounded-xl">
+      <v-row class="align-center">
         <v-col cols="12" md="8">
           <div class="d-flex align-center mb-3">
             <v-avatar color="rgba(255,255,255,0.15)" size="48" class="mr-4">
@@ -64,7 +53,7 @@ function openWorkspace(id: string) {
               </h1>
             </div>
           </div>
-          <p class="text-body-1 text-white ml-16" style="opacity: 0.8">
+          <p class="text-body-1 text-white" style="opacity: 0.8">
             Pick up where you left off or create a new workspace to start collaborating.
           </p>
         </v-col>
@@ -96,27 +85,36 @@ function openWorkspace(id: string) {
       </v-col>
     </v-row>
 
-    <v-row v-else>
-      <v-col v-for="(ws, i) in workspaces" :key="ws.id" cols="12" sm="6" md="4" lg="3">
-        <v-card class="workspace-card h-100" hover @click="openWorkspace(ws.id)">
+    <v-row v-else class="h-[calc(100vh-350px)] overflow-auto">
+      <v-col
+        v-for="(workspace, i) in workspaces"
+        :key="workspace.id"
+        cols="12"
+        sm="6"
+        md="4"
+        lg="3"
+      >
+        <v-card class="h-50" hover @click="openWorkspace(workspace.id)">
           <div
-            class="workspace-card-accent"
-            :style="{ background: cardGradients[i % cardGradients.length] }"
+            class="h-1 w-full"
+            :style="{ background: CARD_GRADIENTS[i % CARD_GRADIENTS.length] }"
           />
           <v-card-item class="pt-8">
             <template #prepend>
-              <v-avatar :color="cardColors[i % cardColors.length]" size="40" class="mr-3">
+              <v-avatar :color="CARD_COLORS[i % CARD_COLORS.length]" size="40" class="mr-3">
                 <v-icon icon="mdi-folder-outline" color="white" size="20" />
               </v-avatar>
             </template>
-            <v-card-title class="text-subtitle-1 font-weight-bold">{{ ws.name }}</v-card-title>
+            <v-card-title class="text-subtitle-1 font-weight-bold">{{
+              workspace.name
+            }}</v-card-title>
             <v-card-subtitle>
-              {{ ws._count?.members || ws.members?.length || 0 }} member(s)
+              {{ workspace._count?.members || workspace.members?.length || 0 }} member(s)
             </v-card-subtitle>
           </v-card-item>
           <v-card-text class="pt-0 d-flex align-center justify-space-between">
             <span class="text-caption text-medium-emphasis">
-              Updated {{ new Date(ws.updatedAt).toLocaleDateString() }}
+              Updated {{ new Date(workspace.updatedAt).toLocaleDateString() }}
             </span>
             <v-icon icon="mdi-arrow-right" size="16" class="text-medium-emphasis" />
           </v-card-text>
@@ -152,7 +150,7 @@ function openWorkspace(id: string) {
             label="Workspace name"
             placeholder="e.g. Marketing Team"
             autofocus
-            @keyup.enter="createWorkspace"
+            @keyup.enter="handleCreateWorkspace"
           />
         </v-card-text>
         <v-card-actions>
@@ -162,7 +160,7 @@ function openWorkspace(id: string) {
             color="primary"
             :loading="creating"
             :disabled="!newName.trim()"
-            @click="createWorkspace"
+            @click="handleCreateWorkspace"
           >
             Create
           </v-btn>
@@ -200,16 +198,6 @@ function openWorkspace(id: string) {
   border-radius: 50%;
   background: radial-gradient(circle, rgba(251, 146, 60, 0.08) 0%, transparent 70%);
   pointer-events: none;
-}
-
-.workspace-card {
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-}
-.workspace-card-accent {
-  height: 4px;
-  width: 100%;
 }
 
 .empty-icon-wrapper {
