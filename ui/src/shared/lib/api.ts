@@ -4,6 +4,7 @@ import { useToastStore } from '@/shared/stores/toast';
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -67,7 +68,7 @@ api.interceptors.response.use(
       }
 
       try {
-        const res = await axios.post('/api/auth/refresh', { refresh_token: refreshToken });
+        const res = await axios.post('/auth/refresh', { refresh_token: refreshToken });
         localStorage.setItem('access_token', res.data.access_token);
         localStorage.setItem('refresh_token', res.data.refresh_token);
         processQueue(null);
