@@ -9,6 +9,8 @@ import { CanvasModule } from './canvas/canvas.module';
 import { MindmapModule } from './mindmap/mindmap.module';
 import { GatewayModule } from './gateway/gateway.module';
 
+const isServerless = !!process.env.VERCEL;
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -19,7 +21,7 @@ import { GatewayModule } from './gateway/gateway.module';
     CommentModule,
     CanvasModule,
     MindmapModule,
-    GatewayModule,
+    ...(isServerless ? [] : [GatewayModule]),
   ],
 })
 export class AppModule {}
