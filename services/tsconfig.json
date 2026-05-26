@@ -1,9 +1,8 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node10",
-    "ignoreDeprecations": "5.0",
+    "module": "node16",
+    "moduleResolution": "node16",
     "noEmit": false,
     "declaration": true,
     "outDir": "./dist",
@@ -12,9 +11,8 @@
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
     "target": "ES2022",
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src/**/*.ts"],
