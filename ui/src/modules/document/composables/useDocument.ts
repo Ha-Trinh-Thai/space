@@ -4,14 +4,12 @@ import { storeToRefs } from 'pinia';
 import { useDocumentStore } from '@/modules/document/store';
 import { useRouteParam } from '@/shared/composables/useRouteParam';
 import { useAutoSave } from '@/shared/composables/useAutoSave';
-import { useToastStore } from '@/shared/stores/toast';
 
 export function useDocument() {
   const router = useRouter();
   const documentStore = useDocumentStore();
-  const toast = useToastStore();
 
-  const { currentDocument, tree, favorites, loading } = storeToRefs(documentStore);
+  const { currentDocument, tree, loading } = storeToRefs(documentStore);
 
   const documentId = useRouteParam('documentId');
   const workspaceId = useRouteParam('workspaceId');
@@ -37,13 +35,6 @@ export function useDocument() {
     }
   }
 
-  async function toggleFavorite() {
-    if (!currentDocument.value || !documentId.value) return;
-    const isFavorite = !currentDocument.value.isFavorite;
-    await documentStore.updateDocument(documentId.value, { isFavorite });
-    toast.success(isFavorite ? 'Added to favorites' : 'Removed from favorites');
-  }
-
   function navigateToDocument(id: string) {
     router.push({
       name: 'document',
@@ -62,12 +53,10 @@ export function useDocument() {
     workspaceId,
     currentDocument,
     tree,
-    favorites,
     loading,
     saving,
     autoSaveContent,
     updateTitle,
-    toggleFavorite,
     navigateToDocument,
     createPage,
   };
