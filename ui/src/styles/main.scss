@@ -62,3 +62,16 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+// ─── Primary call-to-action button ──────────────────
+// Solid primary in light mode; inverted (white bg, primary text) in dark mode.
+// Usage: <v-btn class="btn-cta">
+.btn-cta {
+  background-color: rgb(var(--v-theme-primary)) !important;
+  color: rgb(var(--v-theme-on-primary)) !important;
+}
+
+.v-theme--dark .btn-cta {
+  background-color: #fff !important;
+  color: rgb(var(--v-theme-primary)) !important;
+}
