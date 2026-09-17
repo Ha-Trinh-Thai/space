@@ -4,11 +4,14 @@ import { createVuetify } from 'vuetify';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 
+const storedTheme = localStorage.getItem('theme');
+const defaultTheme = storedTheme === 'dark' || storedTheme === 'light' ? storedTheme : 'light';
+
 const vuetify = createVuetify({
   components,
   directives,
   theme: {
-    defaultTheme: 'light',
+    defaultTheme,
     themes: {
       light: {
         colors: {
