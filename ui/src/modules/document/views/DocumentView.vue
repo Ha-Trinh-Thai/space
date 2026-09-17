@@ -1,61 +1,49 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useDocument } from '@/modules/document/composables/useDocument';
-import TiptapEditor from '@/modules/document/components/TiptapEditor.vue';
+import DocumentEditor from '@/modules/document/components/DocumentEditor.vue';
 import DocumentComments from '@/modules/document/components/DocumentComments.vue';
 
-const { documentId, currentDocument, loading, autoSaveContent, updateTitle, toggleFavorite } =
-  useDocument();
+const { documentId, currentDocument, loading, autoSaveContent, updateTitle } = useDocument();
 
 const showComments = ref(false);
-const editingTitle = ref(false);
 const titleInput = ref('');
+const titleFieldFocused = ref(false);
 
-function startEditTitle() {
-  titleInput.value = currentDocument.value?.title || '';
-  editingTitle.value = true;
-}
+watch(
+  () => currentDocument.value?.title,
+  (title) => {
+    if (!titleFieldFocused.value) {
+      titleInput.value = title || '';
+    }
+  },
+  { immediate: true },
+);
 
-async function saveTitle() {
-  editingTitle.value = false;
-  await updateTitle(titleInput.value);
+function handleTitleBlur() {
+  titleFieldFocused.value = false;
+  updateTitle(titleInput.value);
 }
 </script>
 
 <template>
-  <div v-if="currentDocument" class="document-page">
+  <div v-if="currentDocument" class="document-page d-flex flex-column" style="height: 100%">
     <!-- Document Header -->
-    <div class="d-flex align-center justify-space-between pa-4 pb-0">
+    <div class="d-flex align-center justify-space-between pa-4 pb-0 flex-shrink-0">
       <div class="d-flex align-center ga-2 flex-grow-1">
-        <div
-          v-if="!editingTitle"
-          class="d-flex align-center ga-2 cursor-pointer"
-          @click="startEditTitle"
-        >
-          <h1 class="text-h4 font-weight-bold">
-            {{ currentDocument.title || 'Untitled' }}
-          </h1>
-        </div>
         <v-text-field
-          v-else
           v-model="titleInput"
           variant="plain"
           density="compact"
           hide-details
-          autofocus
-          class="text-h4 font-weight-bold"
-          @blur="saveTitle"
-          @keyup.enter="saveTitle"
+          placeholder="Untitled"
+          class="text-h4 font-weight-bold title-edit-field"
+          @focus="titleFieldFocused = true"
+          @blur="handleTitleBlur"
+          @keyup.enter="($event.target as HTMLInputElement)?.blur()"
         />
       </div>
       <div class="d-flex ga-1">
-        <v-btn
-          :icon="currentDocument.isFavorite ? 'mdi-star' : 'mdi-star-outline'"
-          :color="currentDocument.isFavorite ? 'amber' : 'default'"
-          variant="text"
-          size="small"
-          @click="toggleFavorite"
-        />
         <v-btn
           icon="mdi-comment-text-outline"
           variant="text"
@@ -66,9 +54,9 @@ async function saveTitle() {
     </div>
 
     <!-- Editor -->
-    <div class="pa-4 d-flex ga-4">
-      <div class="flex-grow-1">
-        <TiptapEditor
+    <div class="pa-4 d-flex ga-4 flex-grow-1" style="min-height: 0; min-width: 0">
+      <div class="flex-grow-1" style="min-height: 0; min-width: 0">
+        <DocumentEditor
           :model-value="currentDocument.content"
           :editable="true"
           @update:model-value="autoSaveContent"
@@ -93,3 +81,17 @@ async function saveTitle() {
     <p class="text-body-1 text-medium-emphasis mt-4">Select a document to start editing</p>
   </div>
 </template>
+
+<style scoped>
+.title-edit-field :deep(.v-field__input) {
+  padding: 0;
+  min-height: 0;
+  line-height: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+.title-edit-field :deep(.v-field__field) {
+  min-height: 0;
+}
+</style>

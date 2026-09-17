@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
 import { useWorkspaceStore } from '@/modules/workspace/store';
 import { useAuthStore } from '@/modules/auth/store';
 import { CARD_GRADIENTS, CARD_COLORS } from '@/constants';
 
 const router = useRouter();
-const { workspaces, loading, fetchWorkspaces, createWorkspace } = useWorkspaceStore();
+const workspaceStore = useWorkspaceStore();
+const { workspaces, loading } = storeToRefs(workspaceStore);
+const { fetchWorkspaces, createWorkspace } = workspaceStore;
 const auth = useAuthStore();
-
-// const { workspaces, loading } = storeToRefs(workspaceStore);
 
 const showCreate = ref(false);
 const newName = ref('');

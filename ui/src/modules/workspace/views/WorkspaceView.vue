@@ -9,6 +9,7 @@ import { useCanvasStore } from '@/modules/canvas/store';
 import { useMindmapStore } from '@/modules/mindmap/store';
 import { useToastStore } from '@/shared/stores/toast';
 import { useRouteParam } from '@/shared/composables/useRouteParam';
+import { ConfirmModal } from '@/components/ui';
 
 const router = useRouter();
 const workspaceStore = useWorkspaceStore();
@@ -30,6 +31,8 @@ const tab = ref('documents');
 const showRename = ref(false);
 const showDelete = ref(false);
 const showInvite = ref(false);
+const showDeleteDoc = ref(false);
+const docToDelete = ref<{ id: string; title: string } | null>(null);
 
 // Rename
 const renameName = ref('');
@@ -123,6 +126,19 @@ async function handleRoleChange(memberId: string, role: string) {
   if (!workspaceId.value) return;
   await workspaceStore.updateMemberRole(workspaceId.value, memberId, role);
   toast.success('Role updated');
+}
+
+function confirmDeleteDoc(doc: { id: string; title: string }) {
+  docToDelete.value = doc;
+  showDeleteDoc.value = true;
+}
+
+async function handleDeleteDoc() {
+  if (!docToDelete.value || !workspaceId.value) return;
+  await documentStore.deleteDocument(docToDelete.value.id, workspaceId.value);
+  toast.success('Document deleted');
+  showDeleteDoc.value = false;
+  docToDelete.value = null;
 }
 
 async function createDoc() {
@@ -233,7 +249,7 @@ function roleColor(role: string) {
               :title="doc.title || 'Untitled'"
               :prepend-icon="doc.icon || 'mdi-file-document-outline'"
               rounded="lg"
-              class="mx-2 my-1"
+              class="mx-2 my-1 doc-list-item"
               @click="
                 router.push({
                   name: 'document',
@@ -242,6 +258,15 @@ function roleColor(role: string) {
               "
             >
               <template #append>
+                <v-btn
+                  v-if="canEdit"
+                  icon="mdi-delete-outline"
+                  size="x-small"
+                  variant="text"
+                  color="error"
+                  class="doc-delete-btn mr-1"
+                  @click.stop="confirmDeleteDoc(doc)"
+                />
                 <v-icon icon="mdi-chevron-right" size="18" class="text-medium-emphasis" />
               </template>
             </v-list-item>
@@ -455,24 +480,30 @@ function roleColor(role: string) {
     </v-dialog>
 
     <!-- Delete Dialog -->
-    <v-dialog v-model="showDelete" max-width="440">
-      <v-card class="pa-2">
-        <v-card-title class="font-weight-bold">Delete Workspace</v-card-title>
-        <v-card-text>
-          <v-alert type="warning" variant="tonal" class="mb-4">
-            This action cannot be undone. All documents, canvases, and mindmaps will be permanently
-            deleted.
-          </v-alert>
-          Are you sure you want to delete <strong>{{ ws.name }}</strong
-          >?
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" color="secondary" @click="showDelete = false">Cancel</v-btn>
-          <v-btn color="error" variant="flat" @click="handleDelete">Delete Workspace</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <ConfirmModal
+      v-model="showDelete"
+      title="Delete Workspace"
+      warning="This action cannot be undone. All documents, canvases, and mindmaps will be permanently deleted."
+      confirm-text="Delete Workspace"
+      confirm-color="error"
+      @confirm="handleDelete"
+    >
+      Are you sure you want to delete <strong>{{ ws.name }}</strong
+      >?
+    </ConfirmModal>
+
+    <!-- Delete Document Dialog -->
+    <ConfirmModal
+      v-model="showDeleteDoc"
+      title="Delete Document"
+      warning="This action cannot be undone."
+      confirm-text="Delete"
+      confirm-color="error"
+      @confirm="handleDeleteDoc"
+    >
+      Are you sure you want to delete <strong>{{ docToDelete?.title || 'Untitled' }}</strong
+      >?
+    </ConfirmModal>
 
     <!-- Invite Dialog -->
     <v-dialog v-model="showInvite" max-width="440">
@@ -508,5 +539,13 @@ function roleColor(role: string) {
 .workspace-header {
   background: linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, rgba(234, 88, 12, 0.04) 100%);
   border: 1px solid rgba(249, 115, 22, 0.12);
+}
+
+.doc-delete-btn {
+  opacity: 0;
+}
+
+.doc-list-item:hover .doc-delete-btn {
+  opacity: 1;
 }
 </style>
