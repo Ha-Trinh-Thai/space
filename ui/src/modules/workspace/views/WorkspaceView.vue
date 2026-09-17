@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useWorkspaceStore } from '@/modules/workspace/store';
@@ -62,13 +62,20 @@ const flatDocs = computed(() => {
   return result;
 });
 
-onMounted(async () => {
-  if (workspaceId.value) {
-    await workspaceStore.fetchWorkspace(workspaceId.value);
-    await documentStore.fetchTree(workspaceId.value);
+watch(
+  workspaceId,
+  async (id) => {
+    if (!id) return;
+    await Promise.all([
+      workspaceStore.fetchWorkspace(id),
+      documentStore.fetchTree(id),
+      canvasStore.fetchCanvases(id),
+      mindmapStore.fetchMindmaps(id),
+    ]);
     if (ws.value) renameName.value = ws.value.name;
-  }
-});
+  },
+  { immediate: true },
+);
 
 async function handleRename() {
   if (!renameName.value.trim() || !workspaceId.value) return;
@@ -211,7 +218,7 @@ function roleColor(role: string) {
           <v-btn
             v-if="canEdit"
             size="small"
-            color="primary"
+            class="btn-cta"
             prepend-icon="mdi-plus"
             @click="createDoc"
           >
@@ -248,7 +255,7 @@ function roleColor(role: string) {
             class="mb-4 opacity-50"
           />
           <p class="text-body-1 text-medium-emphasis mb-4">No documents yet</p>
-          <v-btn v-if="canEdit" color="primary" prepend-icon="mdi-plus" @click="createDoc">
+          <v-btn v-if="canEdit" class="btn-cta" prepend-icon="mdi-plus" @click="createDoc">
             Create First Document
           </v-btn>
         </v-card>
@@ -261,7 +268,7 @@ function roleColor(role: string) {
           <v-btn
             v-if="canEdit"
             size="small"
-            color="primary"
+            class="btn-cta"
             prepend-icon="mdi-plus"
             @click="createCanvas"
           >
@@ -299,7 +306,7 @@ function roleColor(role: string) {
         <v-card v-else variant="outlined" class="pa-8 text-center">
           <v-icon icon="mdi-draw" size="48" color="primary" class="mb-4 opacity-50" />
           <p class="text-body-1 text-medium-emphasis mb-4">No canvases yet</p>
-          <v-btn v-if="canEdit" color="primary" prepend-icon="mdi-plus" @click="createCanvas">
+          <v-btn v-if="canEdit" class="btn-cta" prepend-icon="mdi-plus" @click="createCanvas">
             Create First Canvas
           </v-btn>
         </v-card>
@@ -312,7 +319,7 @@ function roleColor(role: string) {
           <v-btn
             v-if="canEdit"
             size="small"
-            color="primary"
+            class="btn-cta"
             prepend-icon="mdi-plus"
             @click="createMindmap"
           >
@@ -350,7 +357,7 @@ function roleColor(role: string) {
         <v-card v-else variant="outlined" class="pa-8 text-center">
           <v-icon icon="mdi-sitemap" size="48" color="primary" class="mb-4 opacity-50" />
           <p class="text-body-1 text-medium-emphasis mb-4">No mindmaps yet</p>
-          <v-btn v-if="canEdit" color="primary" prepend-icon="mdi-plus" @click="createMindmap">
+          <v-btn v-if="canEdit" class="btn-cta" prepend-icon="mdi-plus" @click="createMindmap">
             Create First Mindmap
           </v-btn>
         </v-card>
