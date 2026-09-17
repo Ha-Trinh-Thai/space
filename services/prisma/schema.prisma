@@ -96,7 +96,6 @@ model Document {
   title       String   @default("Untitled")
   content     Json?    @default("{}")
   icon        String?
-  isFavorite  Boolean  @default(false) @map("is_favorite")
   position    Int      @default(0)
   workspaceId String   @map("workspace_id")
   parentId    String?  @map("parent_id")
@@ -111,7 +110,6 @@ model Document {
   comments  Comment[]
 
   @@index([workspaceId, parentId])
-  @@index([workspaceId, isFavorite])
   @@map("documents")
 }
 

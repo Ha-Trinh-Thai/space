@@ -42,7 +42,13 @@ const {
         auto-grow
       />
       <div class="d-flex justify-end mt-2">
-        <v-btn size="small" color="primary" :disabled="!newComment.trim()" @click="addComment">
+        <v-btn
+          size="small"
+          variant="tonal"
+          color="primary"
+          :disabled="!newComment.trim()"
+          @click="addComment"
+        >
           Comment
         </v-btn>
       </div>
@@ -53,7 +59,7 @@ const {
     <!-- Comment List -->
     <v-list v-if="comments.length" class="pa-0">
       <template v-for="comment in comments" :key="comment.id">
-        <div class="pa-3" :class="{ 'bg-grey-lighten-4': comment.resolved }">
+        <div class="pa-3">
           <div class="d-flex align-start ga-2">
             <v-avatar color="primary" size="28">
               <span class="text-caption text-white">{{ comment.author.name.charAt(0) }}</span>

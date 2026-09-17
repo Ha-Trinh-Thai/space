@@ -37,7 +37,6 @@ export class DocumentService {
         icon: true,
         parentId: true,
         position: true,
-        isFavorite: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -45,16 +44,6 @@ export class DocumentService {
     });
 
     return this.buildTree(documents);
-  }
-
-  async getFavorites(workspaceId: string, userId: string) {
-    await this.assertWorkspaceAccess(workspaceId, userId);
-
-    return this.prisma.document.findMany({
-      where: { workspaceId, isFavorite: true },
-      select: { id: true, title: true, icon: true, updatedAt: true },
-      orderBy: { updatedAt: 'desc' },
-    });
   }
 
   async findOne(id: string, userId: string) {
@@ -85,7 +74,6 @@ export class DocumentService {
         ...(dto.title !== undefined && { title: dto.title }),
         ...(dto.content !== undefined && { content: dto.content }),
         ...(dto.icon !== undefined && { icon: dto.icon }),
-        ...(dto.isFavorite !== undefined && { isFavorite: dto.isFavorite }),
       },
     });
   }

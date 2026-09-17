@@ -29,14 +29,6 @@ export class DocumentController {
     return this.documentService.getTree(workspaceId, req.user.id);
   }
 
-  @Get('favorites/:workspaceId')
-  getFavorites(
-    @Param('workspaceId') workspaceId: string,
-    @Request() req: { user: { id: string } },
-  ) {
-    return this.documentService.getFavorites(workspaceId, req.user.id);
-  }
-
   @Get('search/:workspaceId')
   search(
     @Param('workspaceId') workspaceId: string,
