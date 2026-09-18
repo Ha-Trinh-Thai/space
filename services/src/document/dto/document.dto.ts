@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsInt, IsBoolean, IsObject } from 'class-validator';
+import { IsString, IsOptional, IsInt, IsObject } from 'class-validator';
 
 export class CreateDocumentDto {
   @IsString()
@@ -33,10 +33,6 @@ export class UpdateDocumentDto {
   @IsString()
   @IsOptional()
   icon?: string;
-
-  @IsBoolean()
-  @IsOptional()
-  isFavorite?: boolean;
 }
 
 export class MoveDocumentDto {

@@ -8,7 +8,6 @@ export interface DocTreeNode {
   icon: string | null;
   parentId: string | null;
   position: number;
-  isFavorite: boolean;
   children: DocTreeNode[];
 }
 
@@ -17,7 +16,6 @@ export interface Document {
   title: string;
   content: any;
   icon: string | null;
-  isFavorite: boolean;
   parentId: string | null;
   workspaceId: string;
   createdAt: string;
@@ -26,18 +24,12 @@ export interface Document {
 
 export const useDocumentStore = defineStore('document', () => {
   const tree = ref<DocTreeNode[]>([]);
-  const favorites = ref<{ id: string; title: string; icon: string | null }[]>([]);
   const currentDocument = ref<Document | null>(null);
   const loading = ref(false);
 
   async function fetchTree(workspaceId: string) {
     const res = await api.get<DocTreeNode[]>(`/documents/tree/${workspaceId}`);
     tree.value = res.data;
-  }
-
-  async function fetchFavorites(workspaceId: string) {
-    const res = await api.get(`/documents/favorites/${workspaceId}`);
-    favorites.value = res.data;
   }
 
   async function fetchDocument(id: string) {
@@ -62,7 +54,7 @@ export const useDocumentStore = defineStore('document', () => {
       currentDocument.value = { ...currentDocument.value, ...res.data };
     }
     // Update tree title if changed
-    if (data.title !== undefined || data.isFavorite !== undefined) {
+    if (data.title !== undefined) {
       updateTreeNode(tree.value, id, data);
     }
     return res.data;
@@ -92,7 +84,6 @@ export const useDocumentStore = defineStore('document', () => {
     for (const node of nodes) {
       if (node.id === id) {
         if (data.title !== undefined) node.title = data.title;
-        if (data.isFavorite !== undefined) node.isFavorite = data.isFavorite;
         return;
       }
       if (node.children.length) updateTreeNode(node.children, id, data);
@@ -101,11 +92,9 @@ export const useDocumentStore = defineStore('document', () => {
 
   return {
     tree,
-    favorites,
     currentDocument,
     loading,
     fetchTree,
-    fetchFavorites,
     fetchDocument,
     createDocument,
     updateDocument,

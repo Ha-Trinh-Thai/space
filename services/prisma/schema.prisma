@@ -22,6 +22,7 @@ model User {
   comments      Comment[]   @relation("CommentAuthor")
   canvases      Canvas[]    @relation("CanvasAuthor")
   mindmaps      Mindmap[]   @relation("MindmapAuthor")
+  whiteboards   Whiteboard[] @relation("WhiteboardAuthor")
 
   @@map("users")
 }
@@ -58,10 +59,11 @@ model Workspace {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  members   WorkspaceMember[]
-  documents Document[]
-  canvases  Canvas[]
-  mindmaps  Mindmap[]
+  members     WorkspaceMember[]
+  documents   Document[]
+  canvases    Canvas[]
+  mindmaps    Mindmap[]
+  whiteboards Whiteboard[]
 
   @@map("workspaces")
 }
@@ -94,7 +96,6 @@ model Document {
   title       String   @default("Untitled")
   content     Json?    @default("{}")
   icon        String?
-  isFavorite  Boolean  @default(false) @map("is_favorite")
   position    Int      @default(0)
   workspaceId String   @map("workspace_id")
   parentId    String?  @map("parent_id")
@@ -109,7 +110,6 @@ model Document {
   comments  Comment[]
 
   @@index([workspaceId, parentId])
-  @@index([workspaceId, isFavorite])
   @@map("documents")
 }
 
@@ -225,4 +225,22 @@ model MindmapNode {
   @@index([mindmapId])
   @@index([mindmapId, parentId])
   @@map("mindmap_nodes")
+}
+
+// ─── Whiteboard System ───────────────────────────────────
+
+model Whiteboard {
+  id          String   @id @default(uuid())
+  title       String   @default("Untitled Whiteboard")
+  workspaceId String   @map("workspace_id")
+  createdById String   @map("created_by_id")
+  data        Json     @default("[]")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User      @relation("WhiteboardAuthor", fields: [createdById], references: [id])
+
+  @@index([workspaceId])
+  @@map("whiteboards")
 }

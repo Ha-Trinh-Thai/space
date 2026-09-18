@@ -10,7 +10,6 @@ import { useDebounceFn } from '@/shared/composables/useDebounce';
 
 export type CanvasTool =
   | 'select'
-  | 'pan'
   | 'rectangle'
   | 'ellipse'
   | 'arrow'
@@ -40,8 +39,6 @@ export function useCanvas() {
   const camera = ref<CameraState>({ x: 0, y: 0, scale: 1 });
 
   // Grid
-  const showGrid = ref(true);
-  const snapToGrid = ref(false);
   const gridSize = 20;
 
   // Load canvas on route change
@@ -128,7 +125,6 @@ export function useCanvas() {
     });
     if (obj) {
       selectedIds.value = new Set([obj.id]);
-      activeTool.value = 'select';
     }
     return obj;
   }
@@ -214,9 +210,9 @@ export function useCanvas() {
   function getDefaultProps(type: CanvasObjectType): Record<string, any> {
     switch (type) {
       case 'RECTANGLE':
-        return { fill: '#e3f2fd', stroke: '#1976d2', strokeWidth: 2, cornerRadius: 8 };
+        return { fill: 'transparent', stroke: '#1976d2', strokeWidth: 2, cornerRadius: 8 };
       case 'ELLIPSE':
-        return { fill: '#f3e5f5', stroke: '#7b1fa2', strokeWidth: 2 };
+        return { fill: 'transparent', stroke: '#7b1fa2', strokeWidth: 2 };
       case 'ARROW':
         return { stroke: '#424242', strokeWidth: 2, points: [0, 0, 150, 0] };
       case 'LINE':
@@ -243,8 +239,6 @@ export function useCanvas() {
     selectedIds,
     selectedObjects,
     camera,
-    showGrid,
-    snapToGrid,
     gridSize,
     // Selection
     select,
