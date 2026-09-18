@@ -24,7 +24,7 @@ const currentWorkspaceId = computed(() => (route.params.workspaceId as string) |
 const isDark = computed(() => theme.global.name.value === 'dark');
 function toggleTheme() {
   const next = isDark.value ? 'light' : 'dark';
-  theme.global.name.value = next;
+  theme.change(next);
   localStorage.setItem('theme', next);
 }
 

@@ -1,32 +1,47 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, provide } from 'vue';
+import { ref, watch, onMounted, onUnmounted, provide } from 'vue';
+import { useRouter } from 'vue-router';
 import { useCanvas } from '@/modules/canvas/composables/useCanvas';
 import { useCanvasStore } from '@/modules/canvas/store';
 import CanvasToolbar from '@/modules/canvas/components/CanvasToolbar.vue';
 import CanvasStage from '@/modules/canvas/components/CanvasStage.vue';
 import CanvasZoomControls from '@/modules/canvas/components/CanvasZoomControls.vue';
 
+const router = useRouter();
 const canvas = useCanvas();
 const canvasStore = useCanvasStore();
 provide('canvas', canvas);
 
-const editingTitle = ref(false);
-const titleInput = ref('');
-
-function startEditTitle() {
-  titleInput.value = canvas.currentCanvas.value?.title || '';
-  editingTitle.value = true;
+function goBackToWorkspace() {
+  router.push({
+    name: 'workspace',
+    params: { workspaceId: canvas.workspaceId.value },
+    query: { tab: 'canvases' },
+  });
 }
 
-async function saveTitle() {
-  editingTitle.value = false;
+const titleInput = ref('');
+const titleFieldFocused = ref(false);
+
+watch(
+  () => canvas.currentCanvas.value?.title,
+  (title) => {
+    if (!titleFieldFocused.value) {
+      titleInput.value = title || '';
+    }
+  },
+  { immediate: true },
+);
+
+async function handleTitleBlur() {
+  titleFieldFocused.value = false;
   if (canvas.currentCanvas.value && titleInput.value !== canvas.currentCanvas.value.title) {
     await canvasStore.updateCanvas(canvas.currentCanvas.value.id, { title: titleInput.value });
   }
 }
 
 function handleKeydown(e: KeyboardEvent) {
-  if (editingTitle.value) return;
+  if (titleFieldFocused.value) return;
   if (e.key === 'Delete' || e.key === 'Backspace') {
     canvas.deleteSelected();
   }
@@ -48,30 +63,24 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
   <div v-if="canvas.currentCanvas.value" class="canvas-page d-flex flex-column h-100">
     <!-- Header -->
     <div class="canvas-header d-flex align-center px-4 py-2 border-b">
-      <div v-if="!editingTitle" class="cursor-pointer" @click="startEditTitle">
-        <span class="text-h6 font-weight-medium">
-          {{ canvas.currentCanvas.value.title }}
-        </span>
-      </div>
+      <v-btn icon="mdi-arrow-left" variant="text" size="small" @click="goBackToWorkspace" />
       <v-text-field
-        v-else
         v-model="titleInput"
         variant="plain"
         density="compact"
         hide-details
-        autofocus
-        class="text-h6"
-        @blur="saveTitle"
-        @keyup.enter="saveTitle"
+        placeholder="Untitled"
+        class="text-h6 font-weight-medium title-edit-field"
+        @focus="titleFieldFocused = true"
+        @blur="handleTitleBlur"
+        @keyup.enter="($event.target as HTMLInputElement)?.blur()"
       />
     </div>
-
-    <!-- Toolbar -->
-    <CanvasToolbar />
 
     <!-- Canvas -->
     <div class="canvas-container flex-grow-1 position-relative overflow-hidden">
       <CanvasStage />
+      <CanvasToolbar />
       <CanvasZoomControls />
     </div>
   </div>
@@ -99,5 +108,15 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
 }
 .canvas-container {
   background: #f5f5f5;
+}
+.title-edit-field :deep(.v-field__input) {
+  padding: 0;
+  min-height: 0;
+  line-height: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+.title-edit-field :deep(.v-field__field) {
+  min-height: 0;
 }
 </style>
