@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useWorkspaceStore } from '@/modules/workspace/store';
 import { useAuthStore } from '@/modules/auth/store';
@@ -12,6 +12,7 @@ import { useRouteParam } from '@/shared/composables/useRouteParam';
 import { ConfirmModal } from '@/components/ui';
 
 const router = useRouter();
+const route = useRoute();
 const workspaceStore = useWorkspaceStore();
 const auth = useAuthStore();
 const documentStore = useDocumentStore();
@@ -25,7 +26,14 @@ const { tree } = storeToRefs(documentStore);
 const { canvases } = storeToRefs(canvasStore);
 const { mindmaps } = storeToRefs(mindmapStore);
 
-const tab = ref('documents');
+const VALID_TABS = ['documents', 'canvases', 'mindmaps', 'members'];
+
+function resolveInitialTab(): string {
+  const queryTab = route.query.tab;
+  return typeof queryTab === 'string' && VALID_TABS.includes(queryTab) ? queryTab : 'documents';
+}
+
+const tab = ref(resolveInitialTab());
 
 // Dialogs
 const showRename = ref(false);
@@ -33,6 +41,8 @@ const showDelete = ref(false);
 const showInvite = ref(false);
 const showDeleteDoc = ref(false);
 const docToDelete = ref<{ id: string; title: string } | null>(null);
+const showDeleteCanvas = ref(false);
+const canvasToDelete = ref<{ id: string; title: string } | null>(null);
 
 // Rename
 const renameName = ref('');
@@ -42,6 +52,11 @@ const renaming = ref(false);
 const inviteEmail = ref('');
 const inviteRole = ref<'EDITOR' | 'VIEWER'>('EDITOR');
 const inviting = ref(false);
+
+// Create
+const creatingDoc = ref(false);
+const creatingCanvas = ref(false);
+const creatingMindmap = ref(false);
 
 const ws = currentWorkspace;
 const myRole = computed(() => {
@@ -141,22 +156,53 @@ async function handleDeleteDoc() {
   docToDelete.value = null;
 }
 
+function confirmDeleteCanvas(c: { id: string; title: string }) {
+  canvasToDelete.value = c;
+  showDeleteCanvas.value = true;
+}
+
+async function handleDeleteCanvas() {
+  if (!canvasToDelete.value) return;
+  await canvasStore.deleteCanvas(canvasToDelete.value.id);
+  toast.success('Canvas deleted');
+  showDeleteCanvas.value = false;
+  canvasToDelete.value = null;
+}
+
 async function createDoc() {
-  if (!workspaceId.value) return;
-  const doc = await documentStore.createDocument(workspaceId.value);
-  router.push({ name: 'document', params: { workspaceId: workspaceId.value, documentId: doc.id } });
+  if (!workspaceId.value || creatingDoc.value) return;
+  creatingDoc.value = true;
+  try {
+    const doc = await documentStore.createDocument(workspaceId.value);
+    router.push({
+      name: 'document',
+      params: { workspaceId: workspaceId.value, documentId: doc.id },
+    });
+  } finally {
+    creatingDoc.value = false;
+  }
 }
 
 async function createCanvas() {
-  if (!workspaceId.value) return;
-  const c = await canvasStore.createCanvas(workspaceId.value);
-  router.push({ name: 'canvas', params: { workspaceId: workspaceId.value, canvasId: c.id } });
+  if (!workspaceId.value || creatingCanvas.value) return;
+  creatingCanvas.value = true;
+  try {
+    const c = await canvasStore.createCanvas(workspaceId.value);
+    router.push({ name: 'canvas', params: { workspaceId: workspaceId.value, canvasId: c.id } });
+  } finally {
+    creatingCanvas.value = false;
+  }
 }
 
 async function createMindmap() {
-  if (!workspaceId.value) return;
-  const m = await mindmapStore.createMindmap(workspaceId.value);
-  router.push({ name: 'mindmap', params: { workspaceId: workspaceId.value, mindmapId: m.id } });
+  if (!workspaceId.value || creatingMindmap.value) return;
+  creatingMindmap.value = true;
+  try {
+    const m = await mindmapStore.createMindmap(workspaceId.value);
+    router.push({ name: 'mindmap', params: { workspaceId: workspaceId.value, mindmapId: m.id } });
+  } finally {
+    creatingMindmap.value = false;
+  }
 }
 
 function roleColor(role: string) {
@@ -236,6 +282,7 @@ function roleColor(role: string) {
             size="small"
             class="btn-cta"
             prepend-icon="mdi-plus"
+            :loading="creatingDoc"
             @click="createDoc"
           >
             New Document
@@ -280,7 +327,13 @@ function roleColor(role: string) {
             class="mb-4 opacity-50"
           />
           <p class="text-body-1 text-medium-emphasis mb-4">No documents yet</p>
-          <v-btn v-if="canEdit" class="btn-cta" prepend-icon="mdi-plus" @click="createDoc">
+          <v-btn
+            v-if="canEdit"
+            class="btn-cta"
+            prepend-icon="mdi-plus"
+            :loading="creatingDoc"
+            @click="createDoc"
+          >
             Create First Document
           </v-btn>
         </v-card>
@@ -295,15 +348,16 @@ function roleColor(role: string) {
             size="small"
             class="btn-cta"
             prepend-icon="mdi-plus"
+            :loading="creatingCanvas"
             @click="createCanvas"
           >
             New Canvas
           </v-btn>
         </div>
         <v-row v-if="canvases.length">
-          <v-col v-for="c in canvases" :key="c.id" cols="12" sm="6" md="4">
+          <v-col v-for="c in canvases" :key="c.id" cols="12" sm="6" md="6">
             <v-card
-              class="canvas-card"
+              class="canvas-card position-relative"
               hover
               @click="
                 router.push({
@@ -312,6 +366,16 @@ function roleColor(role: string) {
                 })
               "
             >
+              <v-btn
+                v-if="canEdit"
+                icon="mdi-delete-outline"
+                size="x-small"
+                variant="text"
+                color="error"
+                class="canvas-delete-btn position-absolute"
+                style="top: 8px; right: 8px; z-index: 1"
+                @click.stop="confirmDeleteCanvas(c)"
+              />
               <v-card-item>
                 <template #prepend>
                   <v-avatar color="primary" size="40" variant="tonal">
@@ -331,7 +395,13 @@ function roleColor(role: string) {
         <v-card v-else variant="outlined" class="pa-8 text-center">
           <v-icon icon="mdi-draw" size="48" color="primary" class="mb-4 opacity-50" />
           <p class="text-body-1 text-medium-emphasis mb-4">No canvases yet</p>
-          <v-btn v-if="canEdit" class="btn-cta" prepend-icon="mdi-plus" @click="createCanvas">
+          <v-btn
+            v-if="canEdit"
+            class="btn-cta"
+            prepend-icon="mdi-plus"
+            :loading="creatingCanvas"
+            @click="createCanvas"
+          >
             Create First Canvas
           </v-btn>
         </v-card>
@@ -346,6 +416,7 @@ function roleColor(role: string) {
             size="small"
             class="btn-cta"
             prepend-icon="mdi-plus"
+            :loading="creatingMindmap"
             @click="createMindmap"
           >
             New Mindmap
@@ -382,7 +453,13 @@ function roleColor(role: string) {
         <v-card v-else variant="outlined" class="pa-8 text-center">
           <v-icon icon="mdi-sitemap" size="48" color="primary" class="mb-4 opacity-50" />
           <p class="text-body-1 text-medium-emphasis mb-4">No mindmaps yet</p>
-          <v-btn v-if="canEdit" class="btn-cta" prepend-icon="mdi-plus" @click="createMindmap">
+          <v-btn
+            v-if="canEdit"
+            class="btn-cta"
+            prepend-icon="mdi-plus"
+            :loading="creatingMindmap"
+            @click="createMindmap"
+          >
             Create First Mindmap
           </v-btn>
         </v-card>
@@ -505,6 +582,20 @@ function roleColor(role: string) {
       >?
     </ConfirmModal>
 
+    <!-- Delete Canvas Dialog -->
+    <ConfirmModal
+      v-model="showDeleteCanvas"
+      title="Delete Canvas"
+      warning="This action cannot be undone."
+      confirm-text="Delete"
+      confirm-color="error"
+      @confirm="handleDeleteCanvas"
+    >
+      Are you sure you want to delete
+      <strong>{{ canvasToDelete?.title || 'Untitled Canvas' }}</strong
+      >?
+    </ConfirmModal>
+
     <!-- Invite Dialog -->
     <v-dialog v-model="showInvite" max-width="440">
       <v-card class="pa-2">
@@ -546,6 +637,14 @@ function roleColor(role: string) {
 }
 
 .doc-list-item:hover .doc-delete-btn {
+  opacity: 1;
+}
+
+.canvas-delete-btn {
+  opacity: 0;
+}
+
+.canvas-card:hover .canvas-delete-btn {
   opacity: 1;
 }
 </style>

@@ -1,6 +1,13 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, inject, nextTick, ref, watch } from 'vue';
 import type { CanvasObjectData } from '@/modules/canvas/store';
+import {
+  ellipseCenterFromTopLeft,
+  ellipseTopLeftFromCenter,
+  resolveTransformSize,
+  canvasPointToScreen,
+  scalePoints,
+} from '@/modules/canvas/utils/coordinates';
 
 const props = defineProps<{
   object: CanvasObjectData;
@@ -12,8 +19,71 @@ const emit = defineEmits<{
   transform: [data: Partial<CanvasObjectData>];
 }>();
 
+const canvas = inject<any>('canvas');
+
 const transformerRef = ref<any>(null);
 const shapeRef = ref<any>(null);
+const textareaRef = ref<HTMLTextAreaElement | null>(null);
+
+const EDITABLE_TEXT_TYPES = ['TEXT', 'STICKY_NOTE'];
+const isEditingText = ref(false);
+const editValue = ref('');
+
+const textAreaBounds = computed(() => {
+  const o = props.object;
+  const inset = o.type === 'STICKY_NOTE' ? 8 : 0;
+  const stage = shapeRef.value?.getNode()?.getStage();
+  const containerRect = stage?.container().getBoundingClientRect() ?? { left: 0, top: 0 };
+  const topLeft = canvasPointToScreen(
+    { x: o.x + inset, y: o.y + inset },
+    { x: containerRect.left, y: containerRect.top },
+    canvas.camera.value,
+  );
+  const scale = canvas.camera.value.scale;
+  return {
+    left: topLeft.x,
+    top: topLeft.y,
+    width: (o.width - inset * 2) * scale,
+    height: (o.height - inset * 2) * scale,
+    fontSize: (o.props.fontSize ?? (o.type === 'STICKY_NOTE' ? 14 : 18)) * scale,
+  };
+});
+
+function startEditText() {
+  if (!EDITABLE_TEXT_TYPES.includes(props.object.type)) return;
+  editValue.value = props.object.props.text ?? '';
+  isEditingText.value = true;
+  nextTick(() => textareaRef.value?.focus());
+}
+
+function commitEditText() {
+  if (!isEditingText.value) return;
+  isEditingText.value = false;
+  emit('transform', { props: { ...props.object.props, text: editValue.value } });
+}
+
+function cancelEditText() {
+  isEditingText.value = false;
+}
+
+function handleTextareaKeydown(e: KeyboardEvent) {
+  e.stopPropagation();
+  if (e.key === 'Escape') cancelEditText();
+}
+
+watch(
+  () => props.isSelected,
+  async (selected) => {
+    if (!selected) return;
+    await nextTick();
+    const transformerNode = transformerRef.value?.getNode();
+    const shapeNode = shapeRef.value?.getNode();
+    if (!transformerNode || !shapeNode) return;
+    transformerNode.nodes([shapeNode]);
+    transformerNode.getLayer()?.batchDraw();
+  },
+  { immediate: true },
+);
 
 const shapeConfig = computed(() => {
   const o = props.object;
@@ -32,22 +102,24 @@ const shapeConfig = computed(() => {
         ...base,
         width: o.width,
         height: o.height,
-        fill: o.props.fill ?? '#e3f2fd',
+        fill: o.props.fill ?? 'transparent',
         stroke: o.props.stroke ?? '#1976d2',
         strokeWidth: o.props.strokeWidth ?? 2,
         cornerRadius: o.props.cornerRadius ?? 0,
       };
-    case 'ELLIPSE':
+    case 'ELLIPSE': {
+      const center = ellipseCenterFromTopLeft(o.x, o.y, o.width, o.height);
       return {
         ...base,
-        x: o.x + o.width / 2,
-        y: o.y + o.height / 2,
+        x: center.x,
+        y: center.y,
         radiusX: o.width / 2,
         radiusY: o.height / 2,
-        fill: o.props.fill ?? '#f3e5f5',
+        fill: o.props.fill ?? 'transparent',
         stroke: o.props.stroke ?? '#7b1fa2',
         strokeWidth: o.props.strokeWidth ?? 2,
       };
+    }
     case 'ARROW':
       return {
         ...base,
@@ -75,6 +147,7 @@ const shapeConfig = computed(() => {
         fill: o.props.fill ?? '#212121',
         fontFamily: o.props.fontFamily ?? 'Inter',
         width: o.width,
+        opacity: isEditingText.value ? 0 : 1,
       };
     case 'STICKY_NOTE':
       return {
@@ -127,26 +200,52 @@ function handleClick(e: any) {
   emit('select', e.evt.shiftKey);
 }
 
+function topLeftFromNode(node: any): { x: number; y: number } {
+  if (props.object.type === 'ELLIPSE') {
+    return ellipseTopLeftFromCenter(node.x(), node.y(), props.object.width, props.object.height);
+  }
+  return { x: node.x(), y: node.y() };
+}
+
 function handleDragEnd(e: any) {
   const node = e.target;
-  emit('transform', {
-    x: node.x(),
-    y: node.y(),
-  });
+  emit('transform', topLeftFromNode(node));
 }
+
+const POINTS_TYPES = ['ARROW', 'LINE', 'PENCIL'];
 
 function handleTransformEnd(e: any) {
   const node = e.target;
+  const resolved = resolveTransformSize(node.width(), node.height(), node.scaleX(), node.scaleY());
+
+  let extraProps: Record<string, any> | undefined;
+  if (POINTS_TYPES.includes(props.object.type)) {
+    extraProps = {
+      ...props.object.props,
+      points: scalePoints(node.points(), node.scaleX(), node.scaleY()),
+    };
+  } else if (props.object.type === 'TEXT') {
+    extraProps = {
+      ...props.object.props,
+      fontSize: (props.object.props.fontSize ?? 18) * node.scaleY(),
+    };
+  }
+
+  const topLeft =
+    props.object.type === 'ELLIPSE'
+      ? ellipseTopLeftFromCenter(node.x(), node.y(), resolved.width, resolved.height)
+      : { x: node.x(), y: node.y() };
   emit('transform', {
-    x: node.x(),
-    y: node.y(),
+    x: topLeft.x,
+    y: topLeft.y,
     rotation: node.rotation(),
-    scaleX: node.scaleX(),
-    scaleY: node.scaleY(),
-    width: node.width() * node.scaleX(),
-    height: node.height() * node.scaleY(),
+    scaleX: resolved.scaleX,
+    scaleY: resolved.scaleY,
+    width: resolved.width,
+    height: resolved.height,
+    ...(extraProps ? { props: extraProps } : {}),
   });
-  // Reset scale after applying to width/height
+  // Reset the live node's scale too, so it doesn't render doubled before the next re-render.
   node.scaleX(1);
   node.scaleY(1);
 }
@@ -158,12 +257,13 @@ function handleTransformEnd(e: any) {
     ref="shapeRef"
     :config="shapeConfig"
     @click="handleClick"
+    @dblclick="startEditText"
     @dragend="handleDragEnd"
     @transformend="handleTransformEnd"
   />
   <!-- Sticky note text overlay -->
   <v-text
-    v-if="object.type === 'STICKY_NOTE' && object.props.text"
+    v-if="object.type === 'STICKY_NOTE' && object.props.text && !isEditingText"
     :config="{
       x: object.x + 8,
       y: object.y + 8,
@@ -175,6 +275,24 @@ function handleTransformEnd(e: any) {
       listening: false,
     }"
   />
+  <Teleport to="body">
+    <textarea
+      v-if="isEditingText"
+      ref="textareaRef"
+      v-model="editValue"
+      class="canvas-text-editor"
+      :style="{
+        position: 'fixed',
+        left: `${textAreaBounds.left}px`,
+        top: `${textAreaBounds.top}px`,
+        width: `${textAreaBounds.width}px`,
+        height: `${textAreaBounds.height}px`,
+        fontSize: `${textAreaBounds.fontSize}px`,
+      }"
+      @blur="commitEditText"
+      @keydown="handleTextareaKeydown"
+    />
+  </Teleport>
   <v-transformer
     v-if="isSelected"
     ref="transformerRef"
@@ -198,3 +316,18 @@ function handleTransformEnd(e: any) {
     }"
   />
 </template>
+
+<style scoped>
+.canvas-text-editor {
+  z-index: 1000;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #1976d2;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  background: #ffffff;
+  font-family: inherit;
+  line-height: 1.2;
+}
+</style>

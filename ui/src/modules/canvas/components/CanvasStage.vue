@@ -2,6 +2,11 @@
 import { ref, computed, inject, onMounted, onUnmounted } from 'vue';
 import type { CanvasTool } from '@/modules/canvas/composables/useCanvas';
 import CanvasObject from './CanvasObject.vue';
+import {
+  computeBoundingBox,
+  computeLineDelta,
+  computePannedCamera,
+} from '@/modules/canvas/utils/coordinates';
 
 const canvas = inject<any>('canvas');
 
@@ -13,7 +18,14 @@ const stageHeight = ref(600);
 const isDrawing = ref(false);
 const drawStart = ref({ x: 0, y: 0 });
 const drawingPreview = ref<{ x: number; y: number; width: number; height: number } | null>(null);
+const lineDelta = ref({ dx: 0, dy: 0 });
 const pencilPoints = ref<number[]>([]);
+
+// Panning state
+const isPanning = ref(false);
+const panStart = ref({ x: 0, y: 0 });
+const cameraAtPanStart = ref({ x: 0, y: 0, scale: 1 });
+const isHoveringEmptyArea = ref(false);
 
 let resizeObserver: ResizeObserver | null = null;
 
@@ -39,11 +51,15 @@ onUnmounted(() => {
 const stageConfig = computed(() => ({
   width: stageWidth.value,
   height: stageHeight.value,
-  draggable: canvas.activeTool.value === 'pan',
 }));
 
+const cursorStyle = computed(() => {
+  if (canvas.activeTool.value !== 'select') return 'crosshair';
+  if (isPanning.value) return 'grabbing';
+  return isHoveringEmptyArea.value ? 'grab' : 'default';
+});
+
 const gridLines = computed(() => {
-  if (!canvas.showGrid.value) return [];
   const size = canvas.gridSize;
   const scale = canvas.camera.value.scale;
   const offsetX = canvas.camera.value.x % (size * scale);
@@ -78,13 +94,14 @@ function getPointerPos(e: any) {
 function handleStageMouseDown(e: any) {
   const tool: CanvasTool = canvas.activeTool.value;
 
-  // Click on empty area = deselect
+  // Drag from empty area with Select active = deselect, then pan
   if (tool === 'select' && e.target === e.target.getStage()) {
     canvas.deselectAll();
+    isPanning.value = true;
+    panStart.value = e.target.getStage().getPointerPosition();
+    cameraAtPanStart.value = { ...canvas.camera.value };
     return;
   }
-
-  if (tool === 'pan') return;
 
   const objectType = canvas.getToolObjectType(tool);
   if (!objectType) return;
@@ -92,6 +109,7 @@ function handleStageMouseDown(e: any) {
   const pos = getPointerPos(e);
   isDrawing.value = true;
   drawStart.value = pos;
+  lineDelta.value = { dx: 0, dy: 0 };
 
   if (tool === 'pencil') {
     pencilPoints.value = [pos.x, pos.y];
@@ -101,25 +119,33 @@ function handleStageMouseDown(e: any) {
 }
 
 function handleStageMouseMove(e: any) {
-  if (!isDrawing.value) return;
+  if (isPanning.value) {
+    const pointer = e.target.getStage().getPointerPosition();
+    canvas.camera.value = computePannedCamera(cameraAtPanStart.value, panStart.value, pointer);
+    return;
+  }
+
+  if (!isDrawing.value) {
+    isHoveringEmptyArea.value = e.target === e.target.getStage();
+    return;
+  }
   const pos = getPointerPos(e);
   const tool: CanvasTool = canvas.activeTool.value;
 
   if (tool === 'pencil') {
     pencilPoints.value = [...pencilPoints.value, pos.x, pos.y];
   } else if (drawingPreview.value) {
-    const dx = pos.x - drawStart.value.x;
-    const dy = pos.y - drawStart.value.y;
-    drawingPreview.value = {
-      x: dx >= 0 ? drawStart.value.x : pos.x,
-      y: dy >= 0 ? drawStart.value.y : pos.y,
-      width: Math.abs(dx),
-      height: Math.abs(dy),
-    };
+    drawingPreview.value = computeBoundingBox(drawStart.value, pos);
+    lineDelta.value = computeLineDelta(drawStart.value, pos);
   }
 }
 
 function handleStageMouseUp() {
+  if (isPanning.value) {
+    isPanning.value = false;
+    return;
+  }
+
   if (!isDrawing.value) return;
   isDrawing.value = false;
 
@@ -137,16 +163,15 @@ function handleStageMouseUp() {
     }
     pencilPoints.value = [];
   } else if (tool === 'arrow' || tool === 'line') {
-    const dx = drawingPreview.value?.width ?? 0;
-    const dy = drawingPreview.value?.height ?? 0;
-    if (dx > 5 || dy > 5) {
+    const { dx, dy } = lineDelta.value;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
       canvas.createObject(objectType, drawStart.value.x, drawStart.value.y, {
         width: dx,
         height: dy,
         props: {
           stroke: '#424242',
           strokeWidth: 2,
-          points: [0, 0, drawingPreview.value!.width, drawingPreview.value!.height],
+          points: [0, 0, dx, dy],
         },
       });
     }
@@ -187,13 +212,6 @@ function handleWheel(e: any) {
     y: pointer.y - mousePointTo.y * newScale,
   };
 }
-
-function handleDragEnd(e: any) {
-  if (canvas.activeTool.value === 'pan') {
-    canvas.camera.value.x = e.target.x();
-    canvas.camera.value.y = e.target.y();
-  }
-}
 </script>
 
 <template>
@@ -204,7 +222,6 @@ function handleDragEnd(e: any) {
       @mousemove="handleStageMouseMove"
       @mouseup="handleStageMouseUp"
       @wheel="handleWheel"
-      @dragend="handleDragEnd"
     >
       <!-- Grid layer -->
       <v-layer>
@@ -282,7 +299,7 @@ function handleDragEnd(e: any) {
           :config="{
             x: drawStart.x,
             y: drawStart.y,
-            points: [0, 0, drawingPreview.width, drawingPreview.height],
+            points: [0, 0, lineDelta.dx, lineDelta.dy],
             stroke: '#424242',
             strokeWidth: 2,
             dash: [6, 3],
@@ -297,8 +314,6 @@ function handleDragEnd(e: any) {
 .canvas-stage-container {
   width: 100%;
   height: 100%;
-  cursor: v-bind(
-    "canvas.activeTool.value === 'pan' ? 'grab' : canvas.activeTool.value === 'select' ? 'default' : 'crosshair'"
-  );
+  cursor: v-bind(cursorStyle);
 }
 </style>
