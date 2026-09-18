@@ -1,10 +1,21 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { useDocument } from '@/modules/document/composables/useDocument';
 import DocumentEditor from '@/modules/document/components/DocumentEditor.vue';
 import DocumentComments from '@/modules/document/components/DocumentComments.vue';
 
-const { documentId, currentDocument, loading, autoSaveContent, updateTitle } = useDocument();
+const router = useRouter();
+const { documentId, workspaceId, currentDocument, loading, autoSaveContent, updateTitle } =
+  useDocument();
+
+function goBackToWorkspace() {
+  router.push({
+    name: 'workspace',
+    params: { workspaceId: workspaceId.value },
+    query: { tab: 'documents' },
+  });
+}
 
 const showComments = ref(false);
 const titleInput = ref('');
@@ -31,6 +42,7 @@ function handleTitleBlur() {
     <!-- Document Header -->
     <div class="d-flex align-center justify-space-between pa-4 pb-0 flex-shrink-0">
       <div class="d-flex align-center ga-2 flex-grow-1">
+        <v-btn icon="mdi-arrow-left" variant="text" size="small" @click="goBackToWorkspace" />
         <v-text-field
           v-model="titleInput"
           variant="plain"

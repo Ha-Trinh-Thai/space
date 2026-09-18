@@ -12,7 +12,6 @@ interface ToolDef {
 
 const tools: ToolDef[] = [
   { id: 'select', icon: 'mdi-cursor-default-outline', label: 'Select' },
-  { id: 'pan', icon: 'mdi-hand-back-right-outline', label: 'Pan' },
   { id: 'rectangle', icon: 'mdi-rectangle-outline', label: 'Rectangle' },
   { id: 'ellipse', icon: 'mdi-circle-outline', label: 'Ellipse' },
   { id: 'arrow', icon: 'mdi-arrow-top-right', label: 'Arrow' },
@@ -24,50 +23,32 @@ const tools: ToolDef[] = [
 </script>
 
 <template>
-  <div class="canvas-toolbar d-flex align-center justify-center ga-1 pa-2 border-b">
-    <v-btn-group density="compact" variant="flat">
+  <div
+    class="canvas-toolbar position-absolute d-flex align-center ga-3 pa-2 rounded-pill bg-surface elevation-3"
+  >
+    <div class="d-flex align-center ga-2">
       <v-btn
         v-for="tool in tools"
         :key="tool.id"
         :icon="tool.icon"
         size="small"
+        rounded="lg"
+        variant="text"
         :color="canvas.activeTool.value === tool.id ? 'primary' : 'default'"
-        :variant="canvas.activeTool.value === tool.id ? 'flat' : 'text'"
+        :class="{ 'tool-btn--active': canvas.activeTool.value === tool.id }"
         @click="canvas.activeTool.value = tool.id"
       >
         <v-icon :icon="tool.icon" />
         <v-tooltip activator="parent" location="bottom">{{ tool.label }}</v-tooltip>
       </v-btn>
-    </v-btn-group>
+    </div>
 
-    <v-divider vertical class="mx-2" />
-
-    <v-btn-group density="compact" variant="text">
-      <v-btn
-        icon="mdi-grid"
-        size="small"
-        :color="canvas.showGrid.value ? 'primary' : 'default'"
-        @click="canvas.showGrid.value = !canvas.showGrid.value"
-      >
-        <v-icon icon="mdi-grid" />
-        <v-tooltip activator="parent" location="bottom">Toggle Grid</v-tooltip>
-      </v-btn>
-      <v-btn
-        icon="mdi-magnet"
-        size="small"
-        :color="canvas.snapToGrid.value ? 'primary' : 'default'"
-        @click="canvas.snapToGrid.value = !canvas.snapToGrid.value"
-      >
-        <v-icon icon="mdi-magnet" />
-        <v-tooltip activator="parent" location="bottom">Snap to Grid</v-tooltip>
-      </v-btn>
-    </v-btn-group>
-
-    <v-divider vertical class="mx-2" />
+    <v-divider vertical class="mx-1" />
 
     <v-btn
       icon="mdi-delete-outline"
       size="small"
+      rounded="lg"
       variant="text"
       :disabled="canvas.selectedIds.value.size === 0"
       @click="canvas.deleteSelected()"
@@ -77,3 +58,19 @@ const tools: ToolDef[] = [
     </v-btn>
   </div>
 </template>
+
+<style scoped>
+.canvas-toolbar {
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+/* v-btn's flat variant doesn't paint a background for icon-only buttons
+   in this Vuetify build, so the active-tool highlight is applied directly. */
+.tool-btn--active {
+  background-color: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-on-primary));
+}
+</style>
