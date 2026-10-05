@@ -69,6 +69,9 @@
 .btn-cta {
   background-color: rgb(var(--v-theme-primary)) !important;
   color: rgb(var(--v-theme-on-primary)) !important;
+  height: auto !important;
+  min-height: 40px;
+  padding: 12px 20px !important;
 }
 
 .v-theme--dark .btn-cta {

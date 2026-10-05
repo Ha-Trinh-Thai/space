@@ -60,9 +60,9 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
 </script>
 
 <template>
-  <div v-if="canvas.currentCanvas.value" class="canvas-page d-flex flex-column h-100">
+  <div v-if="canvas.currentCanvas.value" class="d-flex flex-column h-screen">
     <!-- Header -->
-    <div class="canvas-header d-flex align-center px-4 py-2 border-b">
+    <div class="d-flex align-center px-4 py-2 border-b min-h-12">
       <v-btn icon="mdi-arrow-left" variant="text" size="small" @click="goBackToWorkspace" />
       <v-text-field
         v-model="titleInput"
@@ -70,7 +70,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
         density="compact"
         hide-details
         placeholder="Untitled"
-        class="text-h6 font-weight-medium title-edit-field"
+        class="text-h6 font-weight-medium [&_.v-field__input]:p-0! [&_.v-field__input]:min-h-0! [&_.v-field__input]:leading-[inherit]! [&_.v-field__input]:[font:inherit]! [&_.v-field__input]:tracking-[inherit]! [&_.v-field__field]:min-h-0!"
         @focus="titleFieldFocused = true"
         @blur="handleTitleBlur"
         @keyup.enter="($event.target as HTMLInputElement)?.blur()"
@@ -78,45 +78,19 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
     </div>
 
     <!-- Canvas -->
-    <div class="canvas-container flex-grow-1 position-relative overflow-hidden">
+    <div class="flex-grow-1 position-relative overflow-hidden bg-[#f5f5f5]">
       <CanvasStage />
       <CanvasToolbar />
       <CanvasZoomControls />
     </div>
   </div>
 
-  <div
-    v-else-if="canvas.loading.value"
-    class="d-flex justify-center align-center"
-    style="height: 50vh"
-  >
+  <div v-else-if="canvas.loading.value" class="d-flex justify-center align-center h-[50vh]">
     <v-progress-circular indeterminate color="primary" />
   </div>
 
-  <div v-else class="d-flex justify-center align-center flex-column" style="height: 50vh">
+  <div v-else class="d-flex justify-center align-center flex-column h-[50vh]">
     <v-icon icon="mdi-draw" size="64" color="grey" />
     <p class="text-body-1 text-medium-emphasis mt-4">Select a canvas to start drawing</p>
   </div>
 </template>
-
-<style scoped>
-.canvas-page {
-  height: 100vh;
-}
-.canvas-header {
-  min-height: 48px;
-}
-.canvas-container {
-  background: #f5f5f5;
-}
-.title-edit-field :deep(.v-field__input) {
-  padding: 0;
-  min-height: 0;
-  line-height: inherit;
-  font: inherit;
-  letter-spacing: inherit;
-}
-.title-edit-field :deep(.v-field__field) {
-  min-height: 0;
-}
-</style>

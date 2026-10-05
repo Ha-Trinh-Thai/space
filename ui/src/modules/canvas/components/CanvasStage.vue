@@ -53,10 +53,10 @@ const stageConfig = computed(() => ({
   height: stageHeight.value,
 }));
 
-const cursorStyle = computed(() => {
-  if (canvas.activeTool.value !== 'select') return 'crosshair';
-  if (isPanning.value) return 'grabbing';
-  return isHoveringEmptyArea.value ? 'grab' : 'default';
+const cursorClass = computed(() => {
+  if (canvas.activeTool.value !== 'select') return 'cursor-crosshair';
+  if (isPanning.value) return 'cursor-grabbing';
+  return isHoveringEmptyArea.value ? 'cursor-grab' : 'cursor-default';
 });
 
 const gridLines = computed(() => {
@@ -215,7 +215,7 @@ function handleWheel(e: any) {
 </script>
 
 <template>
-  <div ref="containerRef" class="canvas-stage-container">
+  <div ref="containerRef" class="w-full h-full" :class="cursorClass">
     <v-stage
       :config="stageConfig"
       @mousedown="handleStageMouseDown"
@@ -309,11 +309,3 @@ function handleWheel(e: any) {
     </v-stage>
   </div>
 </template>
-
-<style scoped>
-.canvas-stage-container {
-  width: 100%;
-  height: 100%;
-  cursor: v-bind(cursorStyle);
-}
-</style>

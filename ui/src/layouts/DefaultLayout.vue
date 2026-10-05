@@ -14,11 +14,3 @@ import AppSidebar from '@/components/layout/AppSidebar.vue';
     </v-layout>
   </v-app>
 </template>
-
-<style scoped>
-.main-toolbar {
-  min-height: 48px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgb(var(--v-theme-surface));
-}
-</style>

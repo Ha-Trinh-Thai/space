@@ -25,7 +25,7 @@ const iconSizes = {
   <div
     :class="[
       sizeClasses[size],
-      'inline-flex items-center justify-center bg-gradient-to-br from-orange-500 to-orange-600 shadow-[0_8px_24px_rgba(249,115,22,0.3)]',
+      'inline-flex items-center justify-center bg-gradient-to-br from-orange-500 to-orange-600 shadow-[0_8px_24px_color-mix(in_srgb,var(--color-brand)_30%,transparent)]',
     ]"
   >
     <img

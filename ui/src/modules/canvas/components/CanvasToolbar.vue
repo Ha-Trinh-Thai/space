@@ -24,9 +24,11 @@ const tools: ToolDef[] = [
 
 <template>
   <div
-    class="canvas-toolbar position-absolute d-flex align-center ga-3 pa-2 rounded-pill bg-surface elevation-3"
+    class="position-absolute d-flex align-center ga-3 pa-2 rounded-pill bg-surface elevation-3 top-4 left-1/2 -translate-x-1/2 z-10"
   >
     <div class="d-flex align-center ga-2">
+      <!-- v-btn's flat variant doesn't paint a background for icon-only buttons
+           in this Vuetify build, so the active-tool highlight is applied directly. -->
       <v-btn
         v-for="tool in tools"
         :key="tool.id"
@@ -35,7 +37,9 @@ const tools: ToolDef[] = [
         rounded="lg"
         variant="text"
         :color="canvas.activeTool.value === tool.id ? 'primary' : 'default'"
-        :class="{ 'tool-btn--active': canvas.activeTool.value === tool.id }"
+        :class="{
+          'bg-vt-primary! text-vt-on-primary!': canvas.activeTool.value === tool.id,
+        }"
         @click="canvas.activeTool.value = tool.id"
       >
         <v-icon :icon="tool.icon" />
@@ -58,19 +62,3 @@ const tools: ToolDef[] = [
     </v-btn>
   </div>
 </template>
-
-<style scoped>
-.canvas-toolbar {
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-}
-
-/* v-btn's flat variant doesn't paint a background for icon-only buttons
-   in this Vuetify build, so the active-tool highlight is applied directly. */
-.tool-btn--active {
-  background-color: rgb(var(--v-theme-primary));
-  color: rgb(var(--v-theme-on-primary));
-}
-</style>

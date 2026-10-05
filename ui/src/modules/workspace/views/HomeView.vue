@@ -41,7 +41,9 @@ function openWorkspace(id: string) {
 <template>
   <div class="pa-6 pa-md-10">
     <!-- Welcome Hero -->
-    <div class="welcome-hero mb-10 pa-md-5 rounded-xl">
+    <div
+      class="mb-10 pa-md-5 rounded-xl relative overflow-hidden bg-[linear-gradient(135deg,#1c1917_0%,#0c0a09_50%,#1a0f00_100%)] border border-[color-mix(in_srgb,var(--color-brand)_15%,transparent)] before:content-[''] before:absolute before:-top-[60%] before:-right-[15%] before:w-[450px] before:h-[450px] before:rounded-full before:bg-[radial-gradient(circle,color-mix(in_srgb,var(--color-brand)_15%,transparent)_0%,transparent_70%)] before:pointer-events-none after:content-[''] after:absolute after:-bottom-[40%] after:left-[5%] after:w-[300px] after:h-[300px] after:rounded-full after:bg-[radial-gradient(circle,color-mix(in_srgb,var(--color-brand-light)_8%,transparent)_0%,transparent_70%)] after:pointer-events-none"
+    >
       <v-row class="align-center">
         <v-col cols="12" md="8">
           <div class="d-flex align-center mb-3">
@@ -54,7 +56,7 @@ function openWorkspace(id: string) {
               </h1>
             </div>
           </div>
-          <p class="text-body-1 text-white" style="opacity: 0.8">
+          <p class="text-body-1 text-white opacity-80">
             Pick up where you left off or create a new workspace to start collaborating.
           </p>
         </v-col>
@@ -62,7 +64,7 @@ function openWorkspace(id: string) {
           <v-btn
             size="large"
             prepend-icon="mdi-plus"
-            class="hero-btn font-weight-bold"
+            class="bg-[linear-gradient(135deg,var(--color-brand),var(--color-brand-hover))]! text-white! font-bold shadow-[0_4px_14px_color-mix(in_srgb,var(--color-brand)_35%,transparent)]! hover:shadow-[0_6px_20px_color-mix(in_srgb,var(--color-brand)_50%,transparent)]! hover:-translate-y-px"
             @click="showCreate = true"
           >
             New Workspace
@@ -123,8 +125,10 @@ function openWorkspace(id: string) {
       </v-col>
 
       <v-col v-if="workspaces.length === 0" cols="12">
-        <div class="empty-state text-center py-16">
-          <div class="empty-icon-wrapper d-inline-flex align-center justify-center mb-4">
+        <div class="text-center py-16">
+          <div
+            class="d-inline-flex align-center justify-center mb-4 w-20 h-20 rounded-3xl bg-[color-mix(in_srgb,var(--color-brand)_8%,transparent)]"
+          >
             <v-icon icon="mdi-folder-plus-outline" size="48" color="primary" />
           </div>
           <h3 class="text-h6 font-weight-bold mb-2">No workspaces yet</h3>
@@ -170,52 +174,3 @@ function openWorkspace(id: string) {
     </v-dialog>
   </div>
 </template>
-
-<style scoped>
-.welcome-hero {
-  background: linear-gradient(135deg, #1c1917 0%, #0c0a09 50%, #1a0f00 100%);
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(249, 115, 22, 0.15);
-}
-.welcome-hero::before {
-  content: '';
-  position: absolute;
-  top: -60%;
-  right: -15%;
-  width: 450px;
-  height: 450px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.15) 0%, transparent 70%);
-  pointer-events: none;
-}
-.welcome-hero::after {
-  content: '';
-  position: absolute;
-  bottom: -40%;
-  left: 5%;
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(251, 146, 60, 0.08) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.empty-icon-wrapper {
-  width: 80px;
-  height: 80px;
-  border-radius: 24px;
-  background: rgba(249, 115, 22, 0.08);
-}
-
-.hero-btn {
-  background: linear-gradient(135deg, #f97316, #ea580c) !important;
-  color: #fff !important;
-  font-weight: 700;
-  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35) !important;
-}
-.hero-btn:hover {
-  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5) !important;
-  transform: translateY(-1px);
-}
-</style>
