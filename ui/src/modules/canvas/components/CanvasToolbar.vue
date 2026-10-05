@@ -62,3 +62,19 @@ const tools: ToolDef[] = [
     </v-btn>
   </div>
 </template>
+
+<style scoped>
+.canvas-toolbar {
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+/* v-btn's flat variant doesn't paint a background for icon-only buttons
+   in this Vuetify build, so the active-tool highlight is applied directly. */
+.tool-btn--active {
+  background-color: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-on-primary));
+}
+</style>

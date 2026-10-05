@@ -93,3 +93,17 @@ function handleTitleBlur() {
     <p class="text-body-1 text-medium-emphasis mt-4">Select a document to start editing</p>
   </div>
 </template>
+
+<style scoped>
+.title-edit-field :deep(.v-field__input) {
+  padding: 0;
+  min-height: 0;
+  line-height: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+.title-edit-field :deep(.v-field__field) {
+  min-height: 0;
+}
+</style>

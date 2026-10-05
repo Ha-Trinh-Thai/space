@@ -316,3 +316,18 @@ function handleTransformEnd(e: any) {
     }"
   />
 </template>
+
+<style scoped>
+.canvas-text-editor {
+  z-index: 1000;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #1976d2;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  background: #ffffff;
+  font-family: inherit;
+  line-height: 1.2;
+}
+</style>
