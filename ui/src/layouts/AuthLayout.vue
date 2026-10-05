@@ -12,7 +12,7 @@ import AppLogo from '@/shared/components/AppLogo.vue';
             cols="12"
             md="5"
             lg="5"
-            class="auth-brand-panel d-none d-md-flex flex-column relative overflow-hidden"
+            class="d-none d-md-flex flex-column relative overflow-hidden bg-[linear-gradient(160deg,#1c1917_0%,#0c0a09_40%,#1a0f00_100%)] before:content-[''] before:absolute before:top-[-30%] before:right-[-30%] before:w-125 before:h-125 before:rounded-full before:bg-[radial-gradient(circle,color-mix(in_srgb,var(--color-brand)_15%,transparent)_0%,transparent_70%)] before:pointer-events-none after:content-[''] after:absolute after:bottom-[-20%] after:left-[-20%] after:w-100 after:h-100 after:rounded-full after:bg-[radial-gradient(circle,color-mix(in_srgb,var(--color-brand-light)_10%,transparent)_0%,transparent_70%)] after:pointer-events-none"
           >
             <div class="d-flex flex-column justify-center align-center grow pa-12">
               <AppLogo size="xl" class="mb-6" />
@@ -21,7 +21,7 @@ import AppLogo from '@/shared/components/AppLogo.vue';
                 Your visual collaboration workspace for organizing ideas, building mind maps, and
                 creating together.
               </p>
-              <div class="mt-10 py-5 px-6 rounded-2xl bg-white/5 border border-white/[0.08]">
+              <div class="mt-10 py-5 px-6 rounded-2xl bg-white/5 border border-white/8">
                 <div
                   v-for="feature in ['Connected Notes', 'Visual Thinking', 'Limitless Workspace']"
                   :key="feature"
@@ -45,7 +45,7 @@ import AppLogo from '@/shared/components/AppLogo.vue';
             class="d-flex align-center justify-center bg-stone-50 p-12 max-md:p-8 max-md:min-h-screen"
           >
             <div
-              class="w-full max-w-[420px] p-8 max-md:p-5 bg-white rounded-[20px] border border-black/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.04)]"
+              class="w-full max-w-105 p-8 max-md:p-5 bg-white rounded-[20px] border border-black/6 shadow-[0_4px_24px_rgba(0,0,0,0.04)]"
             >
               <!-- Mobile logo -->
               <div class="d-md-none text-center mb-8">
@@ -60,33 +60,3 @@ import AppLogo from '@/shared/components/AppLogo.vue';
     </v-main>
   </v-app>
 </template>
-
-<style scoped>
-.auth-brand-panel {
-  background: linear-gradient(160deg, #1c1917 0%, #0c0a09 40%, #1a0f00 100%);
-}
-
-.auth-brand-panel::before {
-  content: '';
-  position: absolute;
-  top: -30%;
-  right: -30%;
-  width: 500px;
-  height: 500px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.15) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.auth-brand-panel::after {
-  content: '';
-  position: absolute;
-  bottom: -20%;
-  left: -20%;
-  width: 400px;
-  height: 400px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(251, 146, 60, 0.1) 0%, transparent 70%);
-  pointer-events: none;
-}
-</style>

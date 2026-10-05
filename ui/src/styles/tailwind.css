@@ -1,2 +1,26 @@
 @import 'tailwindcss/theme' layer(theme);
 @import 'tailwindcss/utilities' layer(utilities);
+
+/* Static brand accent (independent of light/dark theme), sourced from _variables.scss. */
+@theme {
+  --color-brand: var(--color-primary);
+  --color-brand-hover: var(--color-primary-hover);
+  --color-brand-light: var(--color-orange-400);
+}
+
+/* Vuetify's live theme palette (src/plugins/vuetify.ts) as Tailwind colors, e.g. bg-vt-primary. */
+@theme {
+  --color-vt-primary: rgb(var(--v-theme-primary));
+  --color-vt-on-primary: rgb(var(--v-theme-on-primary));
+  --color-vt-secondary: rgb(var(--v-theme-secondary));
+  --color-vt-on-secondary: rgb(var(--v-theme-on-secondary));
+  --color-vt-surface: rgb(var(--v-theme-surface));
+  --color-vt-on-surface: rgb(var(--v-theme-on-surface));
+  --color-vt-background: rgb(var(--v-theme-background));
+  --color-vt-on-background: rgb(var(--v-theme-on-background));
+  --color-vt-success: rgb(var(--v-theme-success));
+  --color-vt-warning: rgb(var(--v-theme-warning));
+  --color-vt-error: rgb(var(--v-theme-error));
+  --color-vt-info: rgb(var(--v-theme-info));
+  --color-vt-border: rgba(var(--v-border-color), var(--v-border-opacity));
+}

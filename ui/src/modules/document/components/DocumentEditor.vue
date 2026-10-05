@@ -60,131 +60,129 @@ defineExpose({ editor });
 </script>
 
 <template>
-  <div class="document-editor">
+  <div class="flex flex-col h-full border border-vt-on-surface/12 rounded-lg overflow-hidden">
     <!-- Toolbar -->
     <div
       v-if="editor && editable !== false"
-      class="editor-toolbar d-flex flex-wrap align-center ga-2 pa-2"
+      class="d-flex flex-wrap align-center ga-2 pa-2 shrink-0 bg-vt-surface shadow-[0_1px_0_color-mix(in_srgb,var(--color-vt-on-surface)_8%,transparent)]"
     >
-      <div class="toolbar-group d-flex">
-        <v-btn-group density="compact" variant="text" class="ga-1">
-          <v-btn
-            icon="mdi-format-bold"
-            size="small"
-            :variant="editor.isActive('bold') ? 'tonal' : 'text'"
-            :color="editor.isActive('bold') ? 'primary' : 'default'"
-            @click="editor.chain().focus().toggleBold().run()"
-          />
-          <v-btn
-            icon="mdi-format-italic"
-            size="small"
-            :variant="editor.isActive('italic') ? 'tonal' : 'text'"
-            :color="editor.isActive('italic') ? 'primary' : 'default'"
-            @click="editor.chain().focus().toggleItalic().run()"
-          />
-          <v-btn
-            icon="mdi-format-underline"
-            size="small"
-            :variant="editor.isActive('underline') ? 'tonal' : 'text'"
-            :color="editor.isActive('underline') ? 'primary' : 'default'"
-            @click="editor.chain().focus().toggleUnderline().run()"
-          />
-          <v-btn
-            icon="mdi-format-strikethrough"
-            size="small"
-            :variant="editor.isActive('strike') ? 'tonal' : 'text'"
-            :color="editor.isActive('strike') ? 'primary' : 'default'"
-            @click="editor.chain().focus().toggleStrike().run()"
-          />
-        </v-btn-group>
+      <div class="d-flex align-center ga-3 bg-vt-on-surface/[.045] rounded-[10px] p-1">
+        <v-btn
+          icon="mdi-format-bold"
+          size="small"
+          :variant="editor.isActive('bold') ? 'tonal' : 'text'"
+          :color="editor.isActive('bold') ? 'primary' : 'default'"
+          @click="editor.chain().focus().toggleBold().run()"
+        />
+        <v-btn
+          icon="mdi-format-italic"
+          size="small"
+          :variant="editor.isActive('italic') ? 'tonal' : 'text'"
+          :color="editor.isActive('italic') ? 'primary' : 'default'"
+          @click="editor.chain().focus().toggleItalic().run()"
+        />
+        <v-btn
+          icon="mdi-format-underline"
+          size="small"
+          :variant="editor.isActive('underline') ? 'tonal' : 'text'"
+          :color="editor.isActive('underline') ? 'primary' : 'default'"
+          @click="editor.chain().focus().toggleUnderline().run()"
+        />
+        <v-btn
+          icon="mdi-format-strikethrough"
+          size="small"
+          :variant="editor.isActive('strike') ? 'tonal' : 'text'"
+          :color="editor.isActive('strike') ? 'primary' : 'default'"
+          @click="editor.chain().focus().toggleStrike().run()"
+        />
       </div>
 
-      <div class="toolbar-group d-flex">
-        <v-btn-group density="compact" variant="text" class="ga-1">
-          <v-btn
-            icon="mdi-format-header-1"
-            size="small"
-            :variant="editor.isActive('heading', { level: 1 }) ? 'tonal' : 'text'"
-            :color="editor.isActive('heading', { level: 1 }) ? 'primary' : 'default'"
-            @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
-          />
-          <v-btn
-            icon="mdi-format-header-2"
-            size="small"
-            :variant="editor.isActive('heading', { level: 2 }) ? 'tonal' : 'text'"
-            :color="editor.isActive('heading', { level: 2 }) ? 'primary' : 'default'"
-            @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-          />
-          <v-btn
-            icon="mdi-format-header-3"
-            size="small"
-            :variant="editor.isActive('heading', { level: 3 }) ? 'tonal' : 'text'"
-            :color="editor.isActive('heading', { level: 3 }) ? 'primary' : 'default'"
-            @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
-          />
-        </v-btn-group>
+      <div class="d-flex align-center ga-3 bg-vt-on-surface/[.045] rounded-[10px] p-1">
+        <v-btn
+          icon="mdi-format-header-1"
+          size="small"
+          :variant="editor.isActive('heading', { level: 1 }) ? 'tonal' : 'text'"
+          :color="editor.isActive('heading', { level: 1 }) ? 'primary' : 'default'"
+          @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
+        />
+        <v-btn
+          icon="mdi-format-header-2"
+          size="small"
+          :variant="editor.isActive('heading', { level: 2 }) ? 'tonal' : 'text'"
+          :color="editor.isActive('heading', { level: 2 }) ? 'primary' : 'default'"
+          @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
+        />
+        <v-btn
+          icon="mdi-format-header-3"
+          size="small"
+          :variant="editor.isActive('heading', { level: 3 }) ? 'tonal' : 'text'"
+          :color="editor.isActive('heading', { level: 3 }) ? 'primary' : 'default'"
+          @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
+        />
       </div>
 
-      <div class="toolbar-group d-flex">
-        <v-btn-group density="compact" variant="text" class="ga-1">
-          <v-btn
-            icon="mdi-format-list-bulleted"
-            size="small"
-            :variant="editor.isActive('bulletList') ? 'tonal' : 'text'"
-            :color="editor.isActive('bulletList') ? 'primary' : 'default'"
-            @click="editor.chain().focus().toggleBulletList().run()"
-          />
-          <v-btn
-            icon="mdi-format-list-numbered"
-            size="small"
-            :variant="editor.isActive('orderedList') ? 'tonal' : 'text'"
-            :color="editor.isActive('orderedList') ? 'primary' : 'default'"
-            @click="editor.chain().focus().toggleOrderedList().run()"
-          />
-          <v-btn
-            icon="mdi-format-list-checks"
-            size="small"
-            :variant="editor.isActive('taskList') ? 'tonal' : 'text'"
-            :color="editor.isActive('taskList') ? 'primary' : 'default'"
-            @click="editor.chain().focus().toggleTaskList().run()"
-          />
-        </v-btn-group>
+      <div class="d-flex align-center ga-3 bg-vt-on-surface/[.045] rounded-[10px] p-1">
+        <v-btn
+          icon="mdi-format-list-bulleted"
+          size="small"
+          :variant="editor.isActive('bulletList') ? 'tonal' : 'text'"
+          :color="editor.isActive('bulletList') ? 'primary' : 'default'"
+          @click="editor.chain().focus().toggleBulletList().run()"
+        />
+        <v-btn
+          icon="mdi-format-list-numbered"
+          size="small"
+          :variant="editor.isActive('orderedList') ? 'tonal' : 'text'"
+          :color="editor.isActive('orderedList') ? 'primary' : 'default'"
+          @click="editor.chain().focus().toggleOrderedList().run()"
+        />
+        <v-btn
+          icon="mdi-format-list-checks"
+          size="small"
+          :variant="editor.isActive('taskList') ? 'tonal' : 'text'"
+          :color="editor.isActive('taskList') ? 'primary' : 'default'"
+          @click="editor.chain().focus().toggleTaskList().run()"
+        />
       </div>
 
-      <div class="toolbar-group d-flex">
-        <v-btn-group density="compact" variant="text" class="ga-1">
-          <v-btn
-            icon="mdi-format-quote-close"
-            size="small"
-            :variant="editor.isActive('blockquote') ? 'tonal' : 'text'"
-            :color="editor.isActive('blockquote') ? 'primary' : 'default'"
-            @click="editor.chain().focus().toggleBlockquote().run()"
-          />
-          <v-btn
-            icon="mdi-code-tags"
-            size="small"
-            :variant="editor.isActive('codeBlock') ? 'tonal' : 'text'"
-            :color="editor.isActive('codeBlock') ? 'primary' : 'default'"
-            @click="editor.chain().focus().toggleCodeBlock().run()"
-          />
-          <v-btn
-            icon="mdi-table"
-            size="small"
-            @click="
-              editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
-            "
-          />
-          <v-btn
-            icon="mdi-minus"
-            size="small"
-            @click="editor.chain().focus().setHorizontalRule().run()"
-          />
-        </v-btn-group>
+      <div class="d-flex align-center ga-3 bg-vt-on-surface/[.045] rounded-[10px] p-1">
+        <v-btn
+          icon="mdi-format-quote-close"
+          size="small"
+          :variant="editor.isActive('blockquote') ? 'tonal' : 'text'"
+          :color="editor.isActive('blockquote') ? 'primary' : 'default'"
+          @click="editor.chain().focus().toggleBlockquote().run()"
+        />
+        <v-btn
+          icon="mdi-code-tags"
+          size="small"
+          :variant="editor.isActive('codeBlock') ? 'tonal' : 'text'"
+          :color="editor.isActive('codeBlock') ? 'primary' : 'default'"
+          @click="editor.chain().focus().toggleCodeBlock().run()"
+        />
+        <v-btn
+          icon="mdi-table"
+          size="small"
+          variant="text"
+          @click="
+            editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+          "
+        />
+        <v-btn
+          icon="mdi-minus"
+          size="small"
+          variant="text"
+          @click="editor.chain().focus().setHorizontalRule().run()"
+        />
       </div>
     </div>
 
     <!-- Editor Content -->
-    <EditorContent :editor="editor" class="editor-content" @contextmenu="onEditorContextMenu" />
+    <EditorContent
+      :editor="editor"
+      class="editor-content min-h-0 overflow-y-auto [flex:1_1_auto]"
+      @contextmenu="onEditorContextMenu"
+    />
 
     <!-- Table Context Menu -->
     <v-menu v-model="showTableMenu" :target="tableMenuTarget">
@@ -226,32 +224,7 @@ defineExpose({ editor });
 </template>
 
 <style lang="scss">
-.document-editor {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.editor-toolbar {
-  flex-shrink: 0;
-  background: rgb(var(--v-theme-surface));
-  box-shadow: 0 1px 0 rgba(var(--v-theme-on-surface), 0.08);
-}
-
-.toolbar-group {
-  background: rgba(var(--v-theme-on-surface), 0.045);
-  border-radius: 10px;
-  padding: 4px;
-}
-
 .editor-content {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-
   .tiptap {
     padding: 16px 24px;
     min-height: 400px;

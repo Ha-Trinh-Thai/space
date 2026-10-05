@@ -47,7 +47,7 @@ function goToWorkspace(id: string) {
     :rail="sideBarCollapsed"
     rail-width="65"
     width="260"
-    class="sidebar"
+    class="border-r! border-[rgba(0,0,0,0.08)]!"
   >
     <div class="h-12.5 pa-4 pb-3 d-flex align-center">
       <AppLogo v-if="!sideBarCollapsed" size="sm" class="mr-3" />
@@ -77,9 +77,9 @@ function goToWorkspace(id: string) {
 
     <!-- Workspace list -->
     <template v-if="!sideBarCollapsed">
-      <div class="section-header d-flex align-center px-5 py-2 mt-2">
+      <div class="d-flex align-center px-5 py-2 mt-2 min-h-8">
         <span
-          class="text-caption text-medium-emphasis text-uppercase font-weight-bold letter-spacing-1"
+          class="text-caption text-medium-emphasis text-uppercase font-weight-bold tracking-wider"
         >
           Workspaces
         </span>
@@ -143,17 +143,3 @@ function goToWorkspace(id: string) {
     </template>
   </v-navigation-drawer>
 </template>
-
-<style scoped>
-.sidebar {
-  border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
-}
-
-.section-header {
-  min-height: 32px;
-}
-
-.letter-spacing-1 {
-  letter-spacing: 0.05em;
-}
-</style>
