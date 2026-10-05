@@ -93,7 +93,7 @@ async function handleSignup() {
         block
         size="x-large"
         :loading="loading"
-        class="auth-submit-btn mt-8 mb-6"
+        class="mt-8 mb-6 bg-[linear-gradient(135deg,var(--color-brand),var(--color-brand-hover))]! text-white! text-base font-bold tracking-[0.02em] shadow-[0_4px_14px_color-mix(in_srgb,var(--color-brand)_35%,transparent)]! [transition:all_0.2s_ease]! hover:shadow-[0_6px_20px_color-mix(in_srgb,var(--color-brand)_45%,transparent)]! hover:-translate-y-px"
         rounded="lg"
       >
         Create Account
@@ -113,5 +113,3 @@ async function handleSignup() {
     </p>
   </div>
 </template>
-
-<style lang="scss" src="../style.scss" />

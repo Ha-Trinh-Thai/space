@@ -1,15 +1,14 @@
 <template>
-  <div class="mindmap-view d-flex flex-column h-100" tabindex="0" @keydown="handleKeydown">
+  <div class="d-flex flex-column h-100 focus:outline-none" tabindex="0" @keydown="handleKeydown">
     <!-- Toolbar -->
-    <div class="mindmap-toolbar d-flex align-center ga-1 pa-2 border-b">
+    <div class="d-flex align-center ga-1 pa-2 border-b bg-vt-surface border-vt-border">
       <v-text-field
         v-if="currentMindmap"
         v-model="titleEdit"
         variant="plain"
         density="compact"
         hide-details
-        class="font-bold"
-        style="max-width: 300px"
+        class="font-bold max-w-[300px]"
         @blur="saveTitle"
         @keydown.enter="($event.target as HTMLInputElement)?.blur()"
       />
@@ -61,12 +60,14 @@
     </div>
 
     <!-- SVG Canvas -->
-    <div ref="canvasRef" class="mindmap-canvas flex-grow-1 overflow-auto position-relative">
+    <div
+      ref="canvasRef"
+      class="flex-grow-1 overflow-auto position-relative bg-[#f8fafc] bg-[radial-gradient(circle,#e2e8f0_1px,transparent_1px)] [background-size:24px_24px]"
+    >
       <v-progress-linear v-if="loading" indeterminate color="primary" />
       <svg
         v-if="layout.nodes.length"
         :viewBox="viewBox"
-        class="mindmap-svg"
         :width="svgWidth"
         :height="svgHeight"
         @click.self="selectNode(null)"
@@ -86,8 +87,11 @@
           v-for="node in layout.nodes"
           :key="node.id"
           :transform="`translate(${node.x}, ${node.y})`"
-          class="mindmap-node"
-          :class="{ selected: node.id === selectedNodeId }"
+          class="cursor-pointer [transition:all_0.15s_ease] hover:brightness-110"
+          :class="{
+            '[&>rect]:drop-shadow-[0_0_8px_color-mix(in_srgb,var(--color-brand)_40%,transparent)]':
+              node.id === selectedNodeId,
+          }"
           @click.stop="selectNode(node.id)"
           @dblclick.stop="startEditing(node.id)"
         >
@@ -104,7 +108,7 @@
           <g
             v-if="node.collapsed"
             :transform="`translate(${node.width - 8}, ${node.height / 2})`"
-            class="collapse-indicator"
+            class="cursor-pointer"
           >
             <circle r="6" fill="#fff" stroke="#999" stroke-width="1" />
             <text text-anchor="middle" dy="4" font-size="10" fill="#666">+</text>
@@ -119,7 +123,7 @@
             y="4"
           >
             <input
-              class="node-edit-input"
+              class="w-full h-full border-none outline-none bg-[rgba(255,255,255,0.95)] rounded-md py-0.5 px-1.5 text-[13px] text-center shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-brand)_30%,transparent)]"
               :value="node.label"
               autofocus
               @blur="onEditBlur($event, node.id)"
@@ -263,44 +267,3 @@ function truncate(text: string, max: number) {
   return text.length > max ? text.slice(0, max) + '…' : text;
 }
 </script>
-
-<style scoped>
-.mindmap-view:focus {
-  outline: none;
-}
-.mindmap-toolbar {
-  background: rgb(var(--v-theme-surface));
-  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-}
-
-.mindmap-canvas {
-  background-color: #f8fafc;
-  background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-.mindmap-node {
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.mindmap-node:hover {
-  filter: brightness(1.1);
-}
-.mindmap-node.selected rect {
-  filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.4));
-}
-.collapse-indicator {
-  cursor: pointer;
-}
-.node-edit-input {
-  width: 100%;
-  height: 100%;
-  border: none;
-  outline: none;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 6px;
-  padding: 2px 6px;
-  font-size: 13px;
-  text-align: center;
-  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.3);
-}
-</style>

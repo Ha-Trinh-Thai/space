@@ -8,6 +8,8 @@ export interface DocTreeNode {
   icon: string | null;
   parentId: string | null;
   position: number;
+  createdAt: string;
+  updatedAt: string;
   children: DocTreeNode[];
 }
 

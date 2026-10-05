@@ -6,14 +6,14 @@
       </v-btn>
     </template>
     <v-card class="pa-2">
-      <div class="d-flex flex-wrap gap-1" style="max-width: 200px">
+      <div class="d-flex flex-wrap gap-1 max-w-[200px]">
         <v-btn
           v-for="color in colors"
           :key="color"
           size="x-small"
           icon
           :style="{ backgroundColor: color }"
-          class="color-swatch"
+          class="w-7! h-7! min-w-7! rounded-full border-2 border-transparent hover:border-[#333]"
           @click="$emit('update', nodeId, color)"
         />
       </div>
@@ -46,16 +46,3 @@ const colors = [
   '#5d4037',
 ];
 </script>
-
-<style scoped>
-.color-swatch {
-  width: 28px !important;
-  height: 28px !important;
-  min-width: 28px !important;
-  border-radius: 50%;
-  border: 2px solid transparent;
-}
-.color-swatch:hover {
-  border-color: #333;
-}
-</style>

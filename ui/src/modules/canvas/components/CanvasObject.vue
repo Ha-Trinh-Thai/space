@@ -280,7 +280,7 @@ function handleTransformEnd(e: any) {
       v-if="isEditingText"
       ref="textareaRef"
       v-model="editValue"
-      class="canvas-text-editor"
+      class="z-[1000] p-0 m-0 border border-[#1976d2] outline-none resize-none overflow-hidden bg-white [font-family:inherit] leading-[1.2]"
       :style="{
         position: 'fixed',
         left: `${textAreaBounds.left}px`,
