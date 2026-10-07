@@ -14,7 +14,9 @@
     "lint:fix": "eslint . --ext .ts,.vue --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:e2e": "pnpm --filter @space/e2e test",
+    "test:e2e:ui": "pnpm --filter @space/e2e test:ui"
   },
   "engines": {
     "node": ">=20.0.0",
