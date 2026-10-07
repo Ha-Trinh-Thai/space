@@ -33,6 +33,7 @@ Space/
 ├── services/    # NestJS backend (@space/services)
 │   ├── src/     # auth, workspace, document, canvas, mindmap, comment, gateway modules
 │   └── prisma/  # schema, migrations, seed script
+├── e2e/         # Playwright end-to-end tests (@space/e2e)
 └── package.json # root scripts, orchestrates both packages via pnpm
 ```
 
@@ -135,6 +136,7 @@ Run from the repo root:
 | `pnpm build` | Build both packages |
 | `pnpm lint` / `pnpm lint:fix` | Lint the whole repo |
 | `pnpm format` / `pnpm format:check` | Prettier format / check |
+| `pnpm test:e2e` / `pnpm test:e2e:ui` | Playwright E2E tests (headless / interactive UI) |
 
 Backend-specific (`pnpm --filter @space/services <script>`):
 
@@ -151,3 +153,18 @@ Frontend-specific (`pnpm --filter @space/ui <script>`):
 |---|---|
 | `test` | Run unit tests (Vitest) |
 | `build` | Type-check (`vue-tsc`) and build for production |
+
+## End-to-end tests (Playwright)
+
+```bash
+pnpm --filter @space/e2e install-browsers                     # once: download Chromium
+docker compose -f services/docker-compose.yml up -d --wait    # Postgres must be running
+pnpm --filter @space/services exec prisma migrate deploy
+pnpm test:e2e
+```
+
+Playwright starts the backend (port 4000) and frontend (port 3000) itself, or
+reuses them if they're already running. Each test registers its own user, so
+tests are independent and run in parallel. Failure screenshots, videos and
+traces go to `e2e/test-results/`; open the HTML report with
+`pnpm --filter @space/e2e report`.
